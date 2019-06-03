@@ -29,16 +29,165 @@ void Convolution(
 	// in a similar way to standard C.
 	// the size of the local memory necessary for the convolution is the tile size + the halo area
 	__local float tile[TILE_Y + 2][TILE_X + 2];
+	
+	int2 GID;
+	GID.x = get_global_id(0);
+	GID.y = get_global_id(1);
+	
+	int2 LID;
+	LID.x = get_local_id(0);
+	LID.y = get_local_id(1);
+
+	int2 LSIZE;
+	LSIZE.x = get_local_size(0);
+	LSIZE.y = get_local_size(1);
 
 	// TO DO...
 
 	// Fill the halo with zeros
+	
+	if (GID.x < Pitch)
+	{
+		if (LID.y == 0)
+		{
+			if (GID.y == 0)
+			{
+				tile[0][LID.x + 1] = 0;
+			}
+			else
+			{
+				tile[0][LID.x + 1] = d_Src[(GID.y - 1) * Pitch + GID.x];
+			}
+		}
+		
+		if (LID.y == LSIZE.y - 1)
+		{
+			if (GID.y == Height - 1)
+			{
+				tile[TILE_Y + 1][LID.x + 1] = 0;
+			}
+			else
+			{
+				tile[TILE_Y + 1][LID.x + 1] = d_Src[(GID.y + 1) * Pitch + GID.x];
+			}
+		}
+
+		
+		if (LID.x == 0)
+		{
+			if (GID.x == 0)
+			{
+				tile[LID.y + 1][0] = 0;
+			}
+			else
+			{
+				tile[LID.y + 1][0] = d_Src[GID.y * Pitch + GID.x - 1];
+			}
+		}
+		
+		if (LID.x == LSIZE.x - 1)
+		{
+			//if (GID.x == Width - 1)
+			//{
+			//	tile[LID.y + 1][TILE_X + 1] = 0;
+			//}
+			//else
+			//{
+				tile[LID.y + 1][TILE_X + 1] = d_Src[GID.y * Pitch + GID.x + 1];
+			//}
+		}
+
+		
+		// Four corner pixels
+		if (LID.x == 1 && LID.y == 1)
+		{
+			if (GID.x == 1 || GID.y == 1)
+			{
+				tile[0][0] = 0;
+			}
+			else
+			{
+				tile[0][0] = d_Src[(GID.y - 2) * Pitch + (GID.x - 2)];
+			}
+		}
+		if (LID.x == 1 && LID.y == LSIZE.y - 2)
+		{
+			if (GID.x == 1 || GID.y == Height - 2)
+			{
+				tile[TILE_Y + 1][0] = 0;
+			}
+			else
+			{
+				tile[TILE_Y + 1][0] = d_Src[(GID.y + 2) * Pitch + (GID.x - 2)];
+			}
+		}
+		if (LID.x == LSIZE.x - 2 && LID.y == 1)
+		{
+			if (GID.x == Width - 2 || GID.y == 1)
+			{
+				tile[0][TILE_X + 1] = 0;
+			}
+			else
+			{
+				tile[0][TILE_X + 1] = d_Src[(GID.y - 2) * Pitch + (GID.x + 2)];
+			}
+		}
+		if (LID.x == LSIZE.x - 2 && LID.y == LSIZE.y - 2)
+		{
+			if (GID.x == Width - 2 || GID.y == Height - 2)
+			{
+				tile[TILE_Y + 1][TILE_X + 1] = 0;
+			}
+			else
+			{
+				tile[TILE_Y + 1][TILE_X + 1] = d_Src[(GID.y + 2) * Pitch + (GID.x + 2)];
+			}
+		}
+	}
+
+	
+
 
 	// Load main filtered area from d_Src
+	
+	if (GID.x < Width)
+	{
+		tile[LID.y + 1][LID.x + 1] = d_Src[GID.y * Pitch + GID.x];
+	}
+
+	
+
 
 	// Load halo regions from d_Src (edges and corners separately), check for image bounds!
 
 	// Sync threads
+	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// Perform the convolution and store the convolved signal to d_Dst.
+	
+	if (GID.x < Width && GID.y < Height)
+	{
+		d_Dst[GID.y * Pitch + GID.x] =(		tile[LID.y - 1 + 1][LID.x - 1 + 1] * c_Kernel[0]
+										+	tile[LID.y - 1 + 1][LID.x + 0 + 1] * c_Kernel[1]
+										+	tile[LID.y - 1 + 1][LID.x + 1 + 1] * c_Kernel[2]
+										+	tile[LID.y + 0 + 1][LID.x - 1 + 1] * c_Kernel[3]
+										+	tile[LID.y + 0 + 1][LID.x + 0 + 1] * c_Kernel[4]
+										+	tile[LID.y + 0 + 1][LID.x + 1 + 1] * c_Kernel[5]
+										+	tile[LID.y + 1 + 1][LID.x - 1 + 1] * c_Kernel[6]
+										+	tile[LID.y + 1 + 1][LID.x + 0 + 1] * c_Kernel[7]
+										+	tile[LID.y + 1 + 1][LID.x + 1 + 1] * c_Kernel[8]
+										)
+											* c_Kernel[9] + c_Kernel[10];
+	}
+	
+	
+	
+
+
+	
+	/*
+	if (GID.x < Width)
+	{
+		d_Dst[GID.y * Pitch + GID.x] =  0.5f;
+	}*/
 }

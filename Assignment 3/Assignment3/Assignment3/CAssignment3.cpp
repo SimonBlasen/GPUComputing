@@ -38,7 +38,7 @@ bool CAssignment3::DoCompute()
 		CConvolution3x3Task convTask("Images/input.pfm", TileSize, ConvKernel, true, 0.0f);
 		RunComputeTask(convTask, TileSize);
 	}
-
+	/*
 
 	cout<<endl<<"########################################"<<endl;
 	cout<<"Task 2: Separable convolution"<<endl<<endl;
@@ -110,7 +110,7 @@ bool CAssignment3::DoCompute()
 			RunComputeTask(histogram, group_size);
 		}
 	}
-
+	*/
 	return true;
 }
 
