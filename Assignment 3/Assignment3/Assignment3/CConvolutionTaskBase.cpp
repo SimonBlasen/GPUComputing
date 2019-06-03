@@ -143,7 +143,7 @@ bool CConvolutionTaskBase::ValidateResults()
 				}
 
 				//to see the difference...
-				m_hCPUResultChannels[i][y * m_Pitch + x] = L2Error * 100;
+				m_hCPUResultChannels[i][y * m_Pitch + x] = L2Error;
 			}
 	cout<<"Mean sq. error (MSE): "<<avgError<<endl;
 	cout<<"Maximum sq. error: "<<maxError<<endl;

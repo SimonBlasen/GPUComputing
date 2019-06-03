@@ -45,6 +45,7 @@ void Convolution(
 	// TO DO...
 
 	// Fill the halo with zeros
+	// Load halo regions from d_Src (edges and corners separately), check for image bounds!
 	
 	if (GID.x < Pitch)
 	{
@@ -87,14 +88,23 @@ void Convolution(
 		
 		if (LID.x == LSIZE.x - 1)
 		{
-			//if (GID.x == Width - 1)
-			//{
-			//	tile[LID.y + 1][TILE_X + 1] = 0;
-			//}
-			//else
-			//{
+			if (GID.x == Width - 1)
+			{
+				tile[LID.y + 1][TILE_X + 1] = 0;
+			}
+			else
+			{
 				tile[LID.y + 1][TILE_X + 1] = d_Src[GID.y * Pitch + GID.x + 1];
-			//}
+			}
+		}
+
+
+
+		// Fill pitch region with 0s
+
+		if (GID.x >= Width)
+		{
+			tile[LID.y + 1][LID.x + 1] = 0;
 		}
 
 		
@@ -155,10 +165,6 @@ void Convolution(
 		tile[LID.y + 1][LID.x + 1] = d_Src[GID.y * Pitch + GID.x];
 	}
 
-	
-
-
-	// Load halo regions from d_Src (edges and corners separately), check for image bounds!
 
 	// Sync threads
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -181,13 +187,4 @@ void Convolution(
 	}
 	
 	
-	
-
-
-	
-	/*
-	if (GID.x < Width)
-	{
-		d_Dst[GID.y * Pitch + GID.x] =  0.5f;
-	}*/
 }

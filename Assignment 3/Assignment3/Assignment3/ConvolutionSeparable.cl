@@ -50,21 +50,87 @@ void ConvHorizontal(
 	//Since these loads are coalesced, they introduce no overhead, except for slightly redundant local memory allocation.
 	//Each work-item loads H_RESULT_STEPS values + 2 halo values
 	__local float tile[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
+	
+	int2 GID;
+	GID.x = get_global_id(0);
+	GID.y = get_global_id(1);
+	
+	int2 LID;
+	LID.x = get_local_id(0);
+	LID.y = get_local_id(1);
+
+	int2 LSIZE;
+	LSIZE.x = get_local_size(0);
+	LSIZE.y = get_local_size(1);
+	
 
 	// TODO:
-	//const int baseX = ...
-	//const int baseY = ...
+	const int baseX = (GID.x - LID.x) * H_RESULT_STEPS;
+	const int baseY = GID.y - LID.y;
 	//const int offset = ...
 
+
 	// Load left halo (check for left bound)
+	int xReadLeft = baseX + LID.x - (H_GROUPSIZE_X);
+	if (xReadLeft >= 0)
+	{
+		tile[LID.y][LID.x] = d_Src[((baseY + LID.y) * Pitch) + xReadLeft];
+	}
+	else
+	{
+		tile[LID.y][LID.x] = 0;
+	}
+	
+
 
 	// Load main data + right halo (check for right bound)
-	// for (int tileID = 1; tileID < ...)
+	
+	for (int tileID = 1; tileID <= H_RESULT_STEPS + 1; tileID++)
+	{
+		int globalXPos = baseX + (H_GROUPSIZE_X * (tileID - 1)) + LID.x;
+		if (globalXPos >= Width)
+		{
+			tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID)] = 0;
+		}
+		else
+		{
+			tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID)] = d_Src[((baseY + LID.y) * Pitch) + globalXPos];
+		}
+	}
+
+	
 
 	// Sync the work-items after loading
+	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// Convolve and store the result
 
+	/*
+	if (LID.x == 0 && LID.y == 0)
+	{
+		d_Dst[((baseY + LID.y) * Pitch) + baseX] = 1;
+	}
+	else
+	{
+		d_Dst[((baseY + LID.y) * Pitch) + baseX + LID.x] = 0;
+	}*/
+
+	
+	for (int tileID = 1; tileID <= H_RESULT_STEPS; tileID++)
+	{
+		int globalXPos = baseX + (H_GROUPSIZE_X * (tileID - 1)) + LID.x;
+		if (globalXPos < Width)
+		{
+			float sum = 0;
+			for (int k = 0; k < KERNEL_RADIUS * 2 + 1; k++)
+			{
+				sum += (tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID) + k - KERNEL_RADIUS]) * (c_Kernel[k]);
+			}
+
+			d_Dst[((baseY + LID.y) * Pitch) + globalXPos] = sum;    //((LID.x + (tileID - 1) * H_GROUPSIZE_X) / ((float)(H_GROUPSIZE_X * H_RESULT_STEPS)));
+		}
+	}
+	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////

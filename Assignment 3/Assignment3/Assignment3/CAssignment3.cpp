@@ -25,7 +25,7 @@ bool CAssignment3::DoCompute()
 	cout<<"IMPORTANT: Make sure you always check the difference images."<<endl;
 	cout<<"The CPU 'gold' test is only suitable to catch trivial errors,"<<endl;
 	cout<<"A low MSE (mean squared error) might still happen with a few corrupted pixels."<<endl;
-
+	/*
 	cout<<"########################################"<<endl;
 	cout<<"Task 1: 3x3 convolution"<<endl<<endl;
 	{
@@ -38,8 +38,8 @@ bool CAssignment3::DoCompute()
 		CConvolution3x3Task convTask("Images/input.pfm", TileSize, ConvKernel, true, 0.0f);
 		RunComputeTask(convTask, TileSize);
 	}
-	/*
-
+	
+	*/
 	cout<<endl<<"########################################"<<endl;
 	cout<<"Task 2: Separable convolution"<<endl<<endl;
 	{
@@ -81,7 +81,7 @@ bool CAssignment3::DoCompute()
 			RunComputeTask(convTask, HGroupSize);
 		}
 	}
-
+	/*
 
 	cout<<endl<<"########################################"<<endl;
 	cout<<"Task 3: Separable bilateral convolution"<<endl<<endl;
@@ -109,8 +109,8 @@ bool CAssignment3::DoCompute()
 			CHistogramTask histogram(0.25f, 0.26f, true, "Images/input.pfm");
 			RunComputeTask(histogram, group_size);
 		}
-	}
-	*/
+	}*/
+	
 	return true;
 }
 
