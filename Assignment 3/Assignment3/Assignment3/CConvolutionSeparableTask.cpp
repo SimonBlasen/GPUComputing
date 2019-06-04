@@ -218,7 +218,6 @@ double CConvolutionSeparableTask::ConvolutionChannelCPU(unsigned int Channel)
 					value += m_hCPUWorkingBuffer[sy * m_Pitch + x] * m_hKernelVertical[m_KernelRadius - k];
 			}
 			m_hCPUResultChannels[Channel][y * m_Pitch + x] = value;
-			//m_hCPUResultChannels[Channel][y * m_Pitch + x] = m_hCPUWorkingBuffer[y * m_Pitch + x];// value;
 		}
 
 	timer.Stop();
@@ -231,7 +230,6 @@ double CConvolutionSeparableTask::ConvolutionChannelGPU(unsigned int Channel, cl
 	cl_int clErr;
 
 	clErr  = clSetKernelArg(m_HorizontalKernel, 0, sizeof(cl_mem), (void*)&m_dGPUWorkingBuffer);
-	//clErr = clSetKernelArg(m_HorizontalKernel, 0, sizeof(cl_mem), (void*)&m_dResultChannels[Channel]);
 	clErr |= clSetKernelArg(m_HorizontalKernel, 1, sizeof(cl_mem), (void*)&m_dSourceChannels[Channel]);
 	V_RETURN_0_CL(clErr, "Error setting horizontal kernel arguments");
 
