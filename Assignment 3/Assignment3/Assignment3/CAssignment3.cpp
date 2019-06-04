@@ -38,13 +38,22 @@ bool CAssignment3::DoCompute()
 		CConvolution3x3Task convTask("Images/input.pfm", TileSize, ConvKernel, true, 0.0f);
 		RunComputeTask(convTask, TileSize);
 	}
-	
+	*/
 	
 	cout<<endl<<"########################################"<<endl;
 	cout<<"Task 2: Separable convolution"<<endl<<endl;
 	{
 		size_t HGroupSize[2] = {32, 16};
 		size_t VGroupSize[2] = {32, 16};
+
+		size_t HGroupSize2[2] = { 32, 8 };
+		size_t VGroupSize2[2] = { 32, 8 };
+
+		size_t HGroupSize3[2] = { 32, 4 };
+		size_t VGroupSize3[2] = { 32, 4 };
+
+		size_t HGroupSize4[2] = { 16, 4 };
+		size_t VGroupSize4[2] = { 16, 4 };
 
 	
 		{
@@ -54,7 +63,22 @@ bool CAssignment3::DoCompute()
 				ConvKernel[i] = 1.0f / 9.0f;
 
 			CConvolutionSeparableTask convTask("box_4x4", "Images/input.pfm", HGroupSize, VGroupSize,
-				4, 4, 4, ConvKernel, ConvKernel);
+				1, 1, 4, ConvKernel, ConvKernel);
+			// note: the last argument is ignored, but our framework requires it
+			// for the horizontal and vertical passes different local sizes might be used
+			RunComputeTask(convTask, HGroupSize);
+		}
+
+
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_4x4", "Images/input.pfm", HGroupSize, VGroupSize,
+				2, 2, 4, ConvKernel, ConvKernel);
 			// note: the last argument is ignored, but our framework requires it
 			// for the horizontal and vertical passes different local sizes might be used
 			RunComputeTask(convTask, HGroupSize);
@@ -63,8 +87,56 @@ bool CAssignment3::DoCompute()
 		{
 			//simple box filter
 			float ConvKernel[17];
-			for(int i = 0; i < 17; i++)
+			for (int i = 0; i < 17; i++)
 				ConvKernel[i] = 1.0f / 17.0f;
+
+			CConvolutionSeparableTask convTask("box_4x4", "Images/input.pfm", HGroupSize, VGroupSize,
+				3, 3, 4, ConvKernel, ConvKernel);
+			// note: the last argument is ignored, but our framework requires it
+			// for the horizontal and vertical passes different local sizes might be used
+			RunComputeTask(convTask, HGroupSize);
+		}
+		
+
+		/*
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for(int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize, VGroupSize,
+				1, 1, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize, VGroupSize,
+				2, 2, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize, VGroupSize,
+				3, 3, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
 
 			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize, VGroupSize,
 				4, 4, 8, ConvKernel, ConvKernel);
@@ -72,16 +144,151 @@ bool CAssignment3::DoCompute()
 		}
 
 		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize, VGroupSize,
+				5, 5, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize, VGroupSize,
+				6, 6, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize, VGroupSize,
+				8, 8, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize);
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize2, VGroupSize2,
+				1, 1, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize2);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize2, VGroupSize2,
+				2, 2, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize2);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize2, VGroupSize2,
+				3, 3, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize2);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize2, VGroupSize2,
+				4, 4, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize2);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize2, VGroupSize2,
+				5, 5, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize2);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize2, VGroupSize2,
+				6, 6, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize2);
+		}
+
+		{
+			//simple box filter
+			float ConvKernel[9];
+			for (int i = 0; i < 9; i++)
+				ConvKernel[i] = 1.0f / 9.0f;
+
+			CConvolutionSeparableTask convTask("box_8x8", "Images/input.pfm", HGroupSize2, VGroupSize2,
+				8, 8, 8, ConvKernel, ConvKernel);
+			RunComputeTask(convTask, HGroupSize2);
+		}
+
+
+
+		*/
+
+
+
+
+
+
+
+
+		{
 			// Gaussian blur
 			float ConvKernel[7] = {
 				0.000817774f, 0.0286433f, 0.235018f, 0.471041f, 0.235018f, 0.0286433f, 0.000817774f
 			};
 			CConvolutionSeparableTask convTask("gauss_3x3", "Images/input.pfm", HGroupSize, VGroupSize,
-				4, 4, 3, ConvKernel, ConvKernel);
+				3, 3, 3, ConvKernel, ConvKernel);
 			RunComputeTask(convTask, HGroupSize);
 		}
 	}
-	*/
+	/*
 	
 
 	cout<<endl<<"########################################"<<endl;
@@ -93,15 +300,18 @@ bool CAssignment3::DoCompute()
 		float ConvKernel[9] = {0.010284844f,	0.0417071f,	0.113371652f,	0.206576619f,	0.252313252f,	0.206576619f,	0.113371652f,	0.0417071f,	0.010284844f};
 
 		CConvolutionBilateralTask convTask("Images/color.pfm", "Images/normals.pfm", "Images/depth.pfm", HGroupSize, VGroupSize,
-			4, 4, 4, ConvKernel, ConvKernel);
+			3, 3, 4, ConvKernel, ConvKernel);
 		RunComputeTask(convTask, HGroupSize);
 	}
+	*/
+	
+
 
 	/*
 	cout<<endl<<"########################################"<<endl;
 	cout<<"Task 4: Histogram"<<endl<<endl;
 	{
-		size_t group_size[2] = {16, 16};
+		size_t group_size[2] = {5, 5};
 		{
 			CHistogramTask histogram(0.25f, 0.26f, false, "Images/input.pfm");
 			RunComputeTask(histogram, group_size);
@@ -111,8 +321,8 @@ bool CAssignment3::DoCompute()
 			CHistogramTask histogram(0.25f, 0.26f, true, "Images/input.pfm");
 			RunComputeTask(histogram, group_size);
 		}
-	}*/
-	
+	}
+	*/
 	return true;
 }
 
