@@ -133,7 +133,7 @@ void DiscontinuityHorizontal(
 		d_Disc[GID.y * Pitch + baseX + LID.x + (H_GROUPSIZE_X * (tileID - 1))] = flag;
 
 
-	}	
+	}
 
 	
 }
@@ -171,7 +171,102 @@ void DiscontinuityVertical(
 
 	//d_Disc['index'] |= flag; // do NOT use '='
 	
+	__local float tileNormX[V_GROUPSIZE_Y * (V_RESULT_STEPS + 2)][V_GROUPSIZE_X];
+	__local float tileNormY[V_GROUPSIZE_Y * (V_RESULT_STEPS + 2)][V_GROUPSIZE_X];
+	__local float tileNormZ[V_GROUPSIZE_Y * (V_RESULT_STEPS + 2)][V_GROUPSIZE_X];
+	__local float tileDepth[V_GROUPSIZE_Y * (V_RESULT_STEPS + 2)][V_GROUPSIZE_X];
+	
+	int2 GID;
+	GID.x = get_global_id(0);
+	GID.y = get_global_id(1);
+	
+	int2 LID;
+	LID.x = get_local_id(0);
+	LID.y = get_local_id(1);
 
+	int2 LSIZE;
+	LSIZE.x = get_local_size(0);
+	LSIZE.y = get_local_size(1);
+	
+	const int baseX = GID.x - LID.x;
+	const int baseY = (GID.y - LID.y) * V_RESULT_STEPS;
+	//const int offset = ...
+
+	//Load left halo (each thread loads exactly one)
+	float4 nd;
+	int globalYPos = baseY + LID.y - V_GROUPSIZE_Y;
+	if (globalYPos >= 0 && (V_GROUPSIZE_Y - LID.y) <= 1)
+	{
+		nd = d_NormDepth[(globalYPos * Pitch) + GID.x];
+	}
+	else
+	{
+		nd = (float4) (0, 0, 0, 0);
+	}
+
+	tileNormX[LID.y][LID.x] = nd.x;
+	tileNormY[LID.y][LID.x] = nd.y;
+	tileNormZ[LID.y][LID.x] = nd.z;
+	tileDepth[LID.y][LID.x] = nd.w;
+
+	// Load main data + right halo
+	// pragma unroll is not necessary as the compiler should unroll the short loops by itself.
+	//#pragma unroll
+	for (int tileID = 1; tileID <= V_RESULT_STEPS + 1; tileID++) {
+		int yPos = baseY + LID.y + (V_GROUPSIZE_Y * (tileID - 1));
+		float4 ndR;
+		if (yPos < Height)
+		{
+			ndR = d_NormDepth[(yPos * Pitch) + GID.x];
+		}
+		else
+		{
+			ndR = (float4) (0, 0, 0, 0);
+		}
+		tileNormX[LID.y + tileID * V_GROUPSIZE_Y][LID.x] = ndR.x;
+		tileNormY[LID.y + tileID * V_GROUPSIZE_Y][LID.x] = ndR.y;
+		tileNormZ[LID.y + tileID * V_GROUPSIZE_Y][LID.x] = ndR.z;
+		tileDepth[LID.y + tileID * V_GROUPSIZE_Y][LID.x] = ndR.w;
+	}
+
+	// Sync threads
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// Identify discontinuities
+	//#pragma unroll
+	for (int tileID = 1; tileID <= V_RESULT_STEPS; tileID++) {
+		int flag = 0;
+
+		float   myDepth = tileDepth[LID.y + tileID * V_GROUPSIZE_Y][LID.x];
+		float4  myNorm  = (float4) (tileNormX[LID.y + tileID * V_GROUPSIZE_Y][LID.x], tileNormY[LID.y + tileID * V_GROUPSIZE_Y][LID.x], tileNormZ[LID.y + tileID * V_GROUPSIZE_Y][LID.x], 0);
+
+
+
+		// Check the upper neighbor
+		float upperDepth	= tileDepth[LID.y + tileID * V_GROUPSIZE_Y - 1][LID.x];
+		float4 upperNorm	= (float4) (tileNormX[LID.y + tileID * V_GROUPSIZE_Y - 1][LID.x], tileNormY[LID.y + tileID * V_GROUPSIZE_Y - 1][LID.x], tileNormZ[LID.y + tileID * V_GROUPSIZE_Y - 1][LID.x], 0);
+
+
+
+		if (IsDepthDiscontinuity(myDepth, upperDepth) || IsNormalDiscontinuity(myNorm, upperNorm))
+			flag |= 4;
+
+		// Check the down neighbor
+		float downDepth	= tileDepth[LID.y + tileID * V_GROUPSIZE_Y + 1][LID.x];
+		float4 downNorm	= (float4) (tileNormX[LID.y + tileID * V_GROUPSIZE_Y + 1][LID.x], tileNormY[LID.y + tileID * V_GROUPSIZE_Y + 1][LID.x], tileNormZ[LID.y + tileID * V_GROUPSIZE_Y + 1][LID.x], 0);
+
+
+
+		if (IsDepthDiscontinuity(myDepth, downDepth) || IsNormalDiscontinuity(myNorm, downNorm))
+			flag |= 8;
+
+
+		// Write the flag out
+
+		d_Disc[(baseY + (V_GROUPSIZE_Y * (tileID - 1))) * Pitch + GID.x] |= flag;
+
+
+	}
 
 }
 
@@ -220,6 +315,23 @@ void ConvHorizontal(
 	// If you find a relevant discontinuity, stop iterating
 
 	// Don't forget to accumulate the weights to normalize the kernel (divide the pixel value by the summed weights)
+	
+
+
+	int2 GID;
+	GID.x = get_global_id(0);
+	GID.y = get_global_id(1);
+	
+	int2 LID;
+	LID.x = get_local_id(0);
+	LID.y = get_local_id(1);
+
+	int2 LSIZE;
+	LSIZE.x = get_local_size(0);
+	LSIZE.y = get_local_size(1);
+
+
+	d_Dst[GID.y * Pitch + GID.x] = d_Disc[GID.y * Pitch + GID.x];
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -242,7 +354,21 @@ void ConvVertical(
 
 	// TODO
 
+	
+	int2 GID;
+	GID.x = get_global_id(0);
+	GID.y = get_global_id(1);
+	
+	int2 LID;
+	LID.x = get_local_id(0);
+	LID.y = get_local_id(1);
 
+	int2 LSIZE;
+	LSIZE.x = get_local_size(0);
+	LSIZE.y = get_local_size(1);
+
+
+	d_Dst[GID.y * Pitch + GID.x] = d_Disc[GID.y * Pitch + GID.x];
 }
 
 
