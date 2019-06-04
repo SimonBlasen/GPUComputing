@@ -298,10 +298,7 @@ void ConvHorizontal(
 	// This will be very similar to the separable convolution, except that you have
 	// also load the discontinuity buffer into the local memory
 	// Each work-item loads H_RESULT_STEPS values + 2 halo values
-	//__local float tile[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
-	//__local int   disc[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
 
-	// Load data to the tile and disc local arrays
 
 	// During the convolution iterate inside-out from the center pixel towards the borders.
 	//for (...) // Iterate over tiles
@@ -318,6 +315,12 @@ void ConvHorizontal(
 	
 
 
+
+	
+	// Load data to the tile and disc local arrays
+	__local float tile[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
+	__local int   disc[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
+
 	int2 GID;
 	GID.x = get_global_id(0);
 	GID.y = get_global_id(1);
@@ -329,7 +332,70 @@ void ConvHorizontal(
 	int2 LSIZE;
 	LSIZE.x = get_local_size(0);
 	LSIZE.y = get_local_size(1);
+	
 
+	const int baseX = (GID.x - LID.x) * H_RESULT_STEPS;
+	const int baseY = GID.y - LID.y;
+	//const int offset = ...
+
+
+	// Load left halo (check for left bound)
+	int xReadLeft = baseX + LID.x - (H_GROUPSIZE_X);
+	if (xReadLeft >= 0)
+	{
+		tile[LID.y][LID.x] = d_Src[((baseY + LID.y) * Pitch) + xReadLeft];
+		disc[LID.y][LID.x] = d_Disc[((baseY + LID.y) * Pitch) + xReadLeft];
+	}
+	else
+	{
+		tile[LID.y][LID.x] = 0;
+		disc[LID.y][LID.x] = 0; 
+	}
+	
+
+
+	// Load main data + right halo (check for right bound)
+	
+	#pragma unroll
+	for (int tileID = 1; tileID <= H_RESULT_STEPS + 1; tileID++)
+	{
+		int globalXPos = baseX + (H_GROUPSIZE_X * (tileID - 1)) + LID.x;
+		if (globalXPos >= Width)
+		{
+			tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID)] = 0;
+			disc[LID.y][LID.x + (H_GROUPSIZE_X * tileID)] = 0;
+		}
+		else
+		{
+			tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID)] = d_Src[((baseY + LID.y) * Pitch) + globalXPos];
+			disc[LID.y][LID.x + (H_GROUPSIZE_X * tileID)] = d_Disc[((baseY + LID.y) * Pitch) + globalXPos];
+		}
+	}
+
+	
+
+	// Sync the work-items after loading
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// Convolve and store the result
+
+
+	
+	#pragma unroll
+	for (int tileID = 1; tileID <= H_RESULT_STEPS; tileID++)
+	{
+		int globalXPos = baseX + (H_GROUPSIZE_X * (tileID - 1)) + LID.x;
+		if (globalXPos < Width)
+		{
+			float sum = 0;
+			for (int k = 0; k < KERNEL_RADIUS * 2 + 1; k++)
+			{
+				sum += (tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID) + k - KERNEL_RADIUS]) * (c_Kernel[k]);
+			}
+
+			d_Dst[((baseY + LID.y) * Pitch) + globalXPos] = sum;    //((LID.x + (tileID - 1) * H_GROUPSIZE_X) / ((float)(H_GROUPSIZE_X * H_RESULT_STEPS)));
+		}
+	}
 
 	d_Dst[GID.y * Pitch + GID.x] = d_Disc[GID.y * Pitch + GID.x];
 }
