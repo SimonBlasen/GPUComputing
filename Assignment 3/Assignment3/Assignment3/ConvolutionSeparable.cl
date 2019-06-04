@@ -85,6 +85,7 @@ void ConvHorizontal(
 
 	// Load main data + right halo (check for right bound)
 	
+	#pragma unroll
 	for (int tileID = 1; tileID <= H_RESULT_STEPS + 1; tileID++)
 	{
 		int globalXPos = baseX + (H_GROUPSIZE_X * (tileID - 1)) + LID.x;
@@ -105,17 +106,9 @@ void ConvHorizontal(
 
 	// Convolve and store the result
 
-	/*
-	if (LID.x == 0 && LID.y == 0)
-	{
-		d_Dst[((baseY + LID.y) * Pitch) + baseX] = 1;
-	}
-	else
-	{
-		d_Dst[((baseY + LID.y) * Pitch) + baseX + LID.x] = 0;
-	}*/
 
 	
+	#pragma unroll
 	for (int tileID = 1; tileID <= H_RESULT_STEPS; tileID++)
 	{
 		int globalXPos = baseX + (H_GROUPSIZE_X * (tileID - 1)) + LID.x;
@@ -153,6 +146,82 @@ void ConvVertical(
 	// Load top halo + main data + bottom halo
 
 	// Compute and store results
+	
+	int2 GID;
+	GID.x = get_global_id(0);
+	GID.y = get_global_id(1);
+	
+	int2 LID;
+	LID.x = get_local_id(0);
+	LID.y = get_local_id(1);
+
+	int2 LSIZE;
+	LSIZE.x = get_local_size(0);
+	LSIZE.y = get_local_size(1);
+	
+
+	// TODO:
+	const int baseX = GID.x - LID.x;
+	const int baseY = (GID.y - LID.y) * V_RESULT_STEPS;
+	//const int offset = ...
+
+
+	
+	// Load left halo (check for left bound)
+	int yRead = baseY + LID.y - (V_GROUPSIZE_Y);
+	if (yRead >= 0 && (V_GROUPSIZE_Y - LID.y) <= KERNEL_RADIUS)		//  <--  Don't do unused loads of global memory
+	{
+		tile[LID.y][LID.x] = d_Src[(yRead * Pitch) + baseX + LID.x];
+	}
+	else
+	{
+		tile[LID.y][LID.x] = 0;
+	}
+
+	
+	// Load main data + down halo (check for right bound)
+	
+	#pragma unroll
+	for (int tileID = 1; tileID <= V_RESULT_STEPS + 1; tileID++)
+	{
+		int globalYPos = baseY + (V_GROUPSIZE_Y * (tileID - 1)) + LID.y;
+		if (globalYPos >= Height)
+		{
+			tile[LID.y + (V_GROUPSIZE_Y * tileID)][LID.x] = 0;
+		}
+		else
+		{
+			tile[LID.y + (V_GROUPSIZE_Y * tileID)][LID.x] = d_Src[(globalYPos * Pitch) + baseX + LID.x];
+		}
+	}
+
+
+	
+	// Sync the work-items after loading
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// Convolve and store the result
+
+
+	
+	#pragma unroll
+	for (int tileID = 1; tileID <= V_RESULT_STEPS; tileID++)
+	{
+		int globalYPos = baseY + (V_GROUPSIZE_Y * (tileID - 1)) + LID.y;
+		if (globalYPos < Height)
+		{
+			float sum = 0;
+			for (int k = 0; k < KERNEL_RADIUS * 2 + 1; k++)
+			{
+				sum += (tile[LID.y + (V_GROUPSIZE_Y * tileID) + k - KERNEL_RADIUS][LID.x]) * (c_Kernel[k]);
+			}
+
+			d_Dst[(globalYPos * Pitch) + baseX + LID.x] = sum;
+		}
+	}
+
+
+
 
 
 }

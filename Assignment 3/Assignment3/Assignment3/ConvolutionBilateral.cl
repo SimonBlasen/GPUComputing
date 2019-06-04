@@ -38,70 +38,102 @@ void DiscontinuityHorizontal(
 	// Each work-item loads H_RESULT_STEPS values + 2 halo values
 	// We split the float4 (normal + depth) into an array of float3 and float to avoid bank conflicts.
 
-	//__local float tileNormX[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
-	//__local float tileNormY[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
-	//__local float tileNormZ[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
-	//__local float tileDepth[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
+	__local float tileNormX[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
+	__local float tileNormY[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
+	__local float tileNormZ[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
+	__local float tileDepth[H_GROUPSIZE_Y][(H_RESULT_STEPS + 2) * H_GROUPSIZE_X];
+	
+	int2 GID;
+	GID.x = get_global_id(0);
+	GID.y = get_global_id(1);
+	
+	int2 LID;
+	LID.x = get_local_id(0);
+	LID.y = get_local_id(1);
 
-	//const int baseX = ...
-	//const int baseY = ...
+	int2 LSIZE;
+	LSIZE.x = get_local_size(0);
+	LSIZE.y = get_local_size(1);
+	
+	const int baseX = (GID.x - LID.x) * H_RESULT_STEPS;
+	const int baseY = GID.y - LID.y;
 	//const int offset = ...
 
 	//Load left halo (each thread loads exactly one)
-	//float4 nd = ...
+	float4 nd;
+	int globalXPos = baseX + LID.x - H_GROUPSIZE_X;
+	if (globalXPos >= 0)
+	{
+		nd = d_NormDepth[(GID.y * Pitch) + globalXPos];
+	}
+	else
+	{
+		nd = (float4) (0, 0, 0, 0);
+	}
 
-	//tileNormX[get_local_id(1)][get_local_id(0)] = nd.x;
-	//tileNormY[get_local_id(1)][get_local_id(0)] = nd.y;
-	//tileNormZ[get_local_id(1)][get_local_id(0)] = nd.z;
-	//tileDepth[get_local_id(1)][get_local_id(0)] = nd.w;
+	tileNormX[LID.y][LID.x] = nd.x;
+	tileNormY[LID.y][LID.x] = nd.y;
+	tileNormZ[LID.y][LID.x] = nd.z;
+	tileDepth[LID.y][LID.x] = nd.w;
 
 	// Load main data + right halo
 	// pragma unroll is not necessary as the compiler should unroll the short loops by itself.
 	//#pragma unroll
-	//for(...) {
-	//float4 nd = ...
-	//tileNormX[get_local_id(1)][get_local_id(0) + i * H_GROUPSIZE_X] = nd.x;
-	//tileNormY[get_local_id(1)][get_local_id(0) + i * H_GROUPSIZE_X] = nd.y;
-	//tileNormZ[get_local_id(1)][get_local_id(0) + i * H_GROUPSIZE_X] = nd.z;
-	//tileDepth[get_local_id(1)][get_local_id(0) + i * H_GROUPSIZE_X] = nd.w;
-	//}
+	for (int tileID = 1; tileID <= H_RESULT_STEPS + 1; tileID++) {
+		int xPos = baseX + LID.x + (H_GROUPSIZE_X * (tileID - 1));
+		float4 ndR;
+		if (xPos < Width)
+		{
+			ndR = d_NormDepth[(GID.y * Pitch) + xPos];
+		}
+		else
+		{
+			ndR = (float4) (0, 0, 0, 0);
+		}
+		tileNormX[LID.y][LID.x + tileID * H_GROUPSIZE_X] = ndR.x;
+		tileNormY[LID.y][LID.x + tileID * H_GROUPSIZE_X] = ndR.y;
+		tileNormZ[LID.y][LID.x + tileID * H_GROUPSIZE_X] = ndR.z;
+		tileDepth[LID.y][LID.x + tileID * H_GROUPSIZE_X] = ndR.w;
+	}
 
 	// Sync threads
+	barrier(CLK_LOCAL_MEM_FENCE);
 
 	// Identify discontinuities
 	//#pragma unroll
-	//for(...) {
-		//	int flag = 0;
+	for (int tileID = 1; tileID <= H_RESULT_STEPS; tileID++) {
+		int flag = 0;
 
-		//float   myDepth = ...
-		//float4  myNorm  = ...
+		float   myDepth = tileDepth[LID.y][LID.x + tileID * H_GROUPSIZE_X];
+		float4  myNorm  = (float4) (tileNormX[LID.y][LID.x + tileID * H_GROUPSIZE_X], tileNormY[LID.y][LID.x + tileID * H_GROUPSIZE_X], tileNormZ[LID.y][LID.x + tileID * H_GROUPSIZE_X], 0);
 
 
 
 		// Check the left neighbor
-		//float leftDepth	= ...
-		//float4 leftNorm	= ...
+		float leftDepth	= tileDepth[LID.y][LID.x + tileID * H_GROUPSIZE_X - 1];
+		float4 leftNorm	= (float4) (tileNormX[LID.y][LID.x + tileID * H_GROUPSIZE_X - 1], tileNormY[LID.y][LID.x + tileID * H_GROUPSIZE_X - 1], tileNormZ[LID.y][LID.x + tileID * H_GROUPSIZE_X - 1], 0);
 
 
 
-		//if (IsDepthDiscontinuity(myDepth, leftDepth) || IsNormalDiscontinuity(myNorm, leftNorm))
-		//	flag |= 1;
+		if (IsDepthDiscontinuity(myDepth, leftDepth) || IsNormalDiscontinuity(myNorm, leftNorm))
+			flag |= 1;
 
 		// Check the right neighbor
-		//float rightDepth	= ...
-		//float4 rightNorm	= ...
+		float rightDepth	= tileDepth[LID.y][LID.x + tileID * H_GROUPSIZE_X + 1];
+		float4 rightNorm	= (float4) (tileNormX[LID.y][LID.x + tileID * H_GROUPSIZE_X + 1], tileNormY[LID.y][LID.x + tileID * H_GROUPSIZE_X + 1], tileNormZ[LID.y][LID.x + tileID * H_GROUPSIZE_X + 1], 0);
 
 
 
-		//if (IsDepthDiscontinuity(myDepth, rightDepth) || IsNormalDiscontinuity(myNorm, rightNorm))
-		//	flag |= 2;
+		if (IsDepthDiscontinuity(myDepth, rightDepth) || IsNormalDiscontinuity(myNorm, rightNorm))
+			flag |= 2;
 
 
 		// Write the flag out
-		// 	d_Disc['index'] = flag;
+
+		d_Disc[GID.y * Pitch + baseX + LID.x + (H_GROUPSIZE_X * (tileID - 1))] = flag;
 
 
-	//}	
+	}	
 
 	
 }

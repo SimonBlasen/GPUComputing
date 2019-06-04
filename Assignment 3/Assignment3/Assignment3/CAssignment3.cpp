@@ -39,7 +39,7 @@ bool CAssignment3::DoCompute()
 		RunComputeTask(convTask, TileSize);
 	}
 	
-	*/
+	
 	cout<<endl<<"########################################"<<endl;
 	cout<<"Task 2: Separable convolution"<<endl<<endl;
 	{
@@ -81,7 +81,8 @@ bool CAssignment3::DoCompute()
 			RunComputeTask(convTask, HGroupSize);
 		}
 	}
-	/*
+	*/
+	
 
 	cout<<endl<<"########################################"<<endl;
 	cout<<"Task 3: Separable bilateral convolution"<<endl<<endl;
@@ -96,6 +97,7 @@ bool CAssignment3::DoCompute()
 		RunComputeTask(convTask, HGroupSize);
 	}
 
+	/*
 	cout<<endl<<"########################################"<<endl;
 	cout<<"Task 4: Histogram"<<endl<<endl;
 	{
