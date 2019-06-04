@@ -263,7 +263,7 @@ void DiscontinuityVertical(
 
 		// Write the flag out
 
-		d_Disc[(baseY + (V_GROUPSIZE_Y * (tileID - 1))) * Pitch + GID.x] |= flag;
+		d_Disc[(baseY + + LID.y + (V_GROUPSIZE_Y * (tileID - 1))) * Pitch + GID.x] |= flag;
 
 
 	}
@@ -387,17 +387,66 @@ void ConvHorizontal(
 		int globalXPos = baseX + (H_GROUPSIZE_X * (tileID - 1)) + LID.x;
 		if (globalXPos < Width)
 		{
-			float sum = 0;
-			for (int k = 0; k < KERNEL_RADIUS * 2 + 1; k++)
+			float sum = (tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID)]) * (c_Kernel[KERNEL_RADIUS]);
+			float weightsSum = c_Kernel[KERNEL_RADIUS];
+			bool stop = false;
+
+
+			// Should he go to the right?
+			if ((disc[LID.y][LID.x + (H_GROUPSIZE_X * tileID)] & 2) == 0)
 			{
-				sum += (tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID) + k - KERNEL_RADIUS]) * (c_Kernel[k]);
+				for (int k = 1; k <= KERNEL_RADIUS; k++)
+				{
+					if (stop == false && (disc[LID.y][LID.x + (H_GROUPSIZE_X * tileID) + k] & 2) == 0)
+					{
+						sum += (tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID) + k]) * (c_Kernel[KERNEL_RADIUS + k]);
+						weightsSum += c_Kernel[KERNEL_RADIUS + k];
+					}
+					else if (stop == false)
+					{
+						sum += (tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID) + k]) * (c_Kernel[KERNEL_RADIUS + k]);
+						weightsSum += c_Kernel[KERNEL_RADIUS + k];
+						stop = true;
+					}
+				}
+			}
+			
+
+
+			// To the left
+			
+			stop = false;
+			if ((disc[LID.y][LID.x + (H_GROUPSIZE_X * tileID)] & 1) == 0)
+			{
+				for (int k = 1; k <= KERNEL_RADIUS; k++)
+				{
+					if (stop == false && (disc[LID.y][LID.x + (H_GROUPSIZE_X * tileID) - k] & 1) == 0)
+					{
+						sum += (tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID) - k]) * (c_Kernel[KERNEL_RADIUS - k]);
+						weightsSum += c_Kernel[KERNEL_RADIUS - k];
+					}
+					else if (stop == false)
+					{
+						sum += (tile[LID.y][LID.x + (H_GROUPSIZE_X * tileID) - k]) * (c_Kernel[KERNEL_RADIUS - k]);
+						weightsSum += c_Kernel[KERNEL_RADIUS - k];
+						stop = true;
+					}
+				}
+			}
+			
+
+
+			// Normalization
+			if (weightsSum != 1)
+			{
+				sum = sum / weightsSum;
 			}
 
-			d_Dst[((baseY + LID.y) * Pitch) + globalXPos] = sum;    //((LID.x + (tileID - 1) * H_GROUPSIZE_X) / ((float)(H_GROUPSIZE_X * H_RESULT_STEPS)));
+			
+			d_Dst[((baseY + LID.y) * Pitch) + globalXPos] = sum;
+			
 		}
 	}
-
-	d_Dst[GID.y * Pitch + GID.x] = d_Disc[GID.y * Pitch + GID.x];
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -417,9 +466,15 @@ void ConvVertical(
 			int Pitch
 			)
 {
+	
+	__local float tile[(V_RESULT_STEPS + 2) * V_GROUPSIZE_Y][V_GROUPSIZE_X];
+	__local int   disc[(V_RESULT_STEPS + 2) * V_GROUPSIZE_Y][V_GROUPSIZE_X];
 
-	// TODO
+	//TO DO:
+	// Conceptually similar to ConvHorizontal
+	// Load top halo + main data + bottom halo
 
+	// Compute and store results
 	
 	int2 GID;
 	GID.x = get_global_id(0);
@@ -432,9 +487,123 @@ void ConvVertical(
 	int2 LSIZE;
 	LSIZE.x = get_local_size(0);
 	LSIZE.y = get_local_size(1);
+	
+
+	// TODO:
+	const int baseX = GID.x - LID.x;
+	const int baseY = (GID.y - LID.y) * V_RESULT_STEPS;
+	//const int offset = ...
 
 
-	d_Dst[GID.y * Pitch + GID.x] = d_Disc[GID.y * Pitch + GID.x];
+	
+	// Load left halo (check for left bound)
+	int yRead = baseY + LID.y - (V_GROUPSIZE_Y);
+	if (yRead >= 0 && (V_GROUPSIZE_Y - LID.y) <= KERNEL_RADIUS)		//  <--  Don't do unused loads of global memory
+	{
+		tile[LID.y][LID.x] = d_Src[(yRead * Pitch) + baseX + LID.x];
+		disc[LID.y][LID.x] = d_Disc[(yRead * Pitch) + baseX + LID.x];
+	}
+	else
+	{
+		tile[LID.y][LID.x] = 0;
+		disc[LID.y][LID.x] = 0;
+	}
+
+	
+	// Load main data + down halo (check for right bound)
+	
+	#pragma unroll
+	for (int tileID = 1; tileID <= V_RESULT_STEPS + 1; tileID++)
+	{
+		int globalYPos = baseY + (V_GROUPSIZE_Y * (tileID - 1)) + LID.y;
+		if (globalYPos >= Height)
+		{
+			tile[LID.y + (V_GROUPSIZE_Y * tileID)][LID.x] = 0;
+			disc[LID.y + (V_GROUPSIZE_Y * tileID)][LID.x] = 0;
+		}
+		else
+		{
+			tile[LID.y + (V_GROUPSIZE_Y * tileID)][LID.x] = d_Src[(globalYPos * Pitch) + baseX + LID.x];
+			disc[LID.y + (V_GROUPSIZE_Y * tileID)][LID.x] = d_Disc[(globalYPos * Pitch) + baseX + LID.x];
+		}
+	}
+
+
+	
+	// Sync the work-items after loading
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// Convolve and store the result
+
+
+	
+	#pragma unroll
+	for (int tileID = 1; tileID <= V_RESULT_STEPS; tileID++)
+	{
+		int globalYPos = baseY + (V_GROUPSIZE_Y * (tileID - 1)) + LID.y;
+		if (globalYPos < Height)
+		{
+		
+		
+			float sum = (tile[LID.y + (V_GROUPSIZE_Y * tileID)][LID.x]) * (c_Kernel[KERNEL_RADIUS]);
+			float weightsSum = c_Kernel[KERNEL_RADIUS];
+			bool stop = false;
+
+			// Downwards
+			
+			if ((disc[LID.y + (V_GROUPSIZE_Y * tileID)][LID.x] & 8) == 0)
+			{
+				for (int k = 1; k <= KERNEL_RADIUS; k++)
+				{
+					if (stop == false && (disc[LID.y + (V_GROUPSIZE_Y * tileID) + k][LID.x] & 8) == 0)
+					{
+						sum += (tile[LID.y + (V_GROUPSIZE_Y * tileID) + k][LID.x]) * (c_Kernel[KERNEL_RADIUS + k]);
+						weightsSum += c_Kernel[KERNEL_RADIUS + k];
+					}
+					else if (stop == false)
+					{
+						sum += (tile[LID.y + (V_GROUPSIZE_Y * tileID) + k][LID.x]) * (c_Kernel[KERNEL_RADIUS + k]);
+						weightsSum += c_Kernel[KERNEL_RADIUS + k];
+						stop = true;
+					}
+				}
+			}
+			
+			// To the left
+
+			stop = false;
+			if ((disc[LID.y + (V_GROUPSIZE_Y * tileID)][LID.x] & 4) == 0)
+			{
+				for (int k = 1; k <= KERNEL_RADIUS; k++)
+				{
+					if (stop == false && (disc[LID.y + (V_GROUPSIZE_Y * tileID) - k][LID.x] & 4) == 0)
+					{
+						sum += (tile[LID.y + (V_GROUPSIZE_Y * tileID) - k][LID.x]) * (c_Kernel[KERNEL_RADIUS - k]);
+						weightsSum += c_Kernel[KERNEL_RADIUS - k];
+					}
+					else if (stop == false)
+					{
+						sum += (tile[LID.y + (V_GROUPSIZE_Y * tileID) - k][LID.x]) * (c_Kernel[KERNEL_RADIUS - k]);
+						weightsSum += c_Kernel[KERNEL_RADIUS - k];
+						stop = true;
+					}
+				}
+			}
+
+
+			// Normalization
+			if (weightsSum != 1)
+			{
+				sum = sum / weightsSum;
+			}
+
+			
+			d_Dst[(globalYPos * Pitch) + baseX + LID.x] = sum;
+			
+		}
+	}
+
+
 }
 
 

@@ -261,7 +261,7 @@ void CConvolutionTaskBase::SaveImage(const std::string& FileName, float* Channel
 	}
 	string bmp_path = FileName;
 	bmp_path.replace(bmp_path.rfind(".pfm"), 4, ".bmp");
-	//save_image_bmp(bmp_path.c_str(), img.data(), m_Width, m_Height);
+	save_image_bmp(bmp_path.c_str(), img.data(), m_Width, m_Height);
 }
 
 void CConvolutionTaskBase::SaveIntImage(const std::string& FileName, int* Channel)
