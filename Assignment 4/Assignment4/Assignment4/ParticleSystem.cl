@@ -156,9 +156,29 @@ __kernel void Integrate(__global uint *gAlive,
 
 	// ADD YOUR CODE HERE (INSTEAD OF THE LINES BELOW) 
 	// to finish the implementation of the Verlet Velocity Integration
-	x0.y = 0.2f * sin(x0.w * 5.f) + 0.3f;
+
+	float4 a0 = (float4)(gAccel.x + (F0.x / v0.w), gAccel.y + (F0.y / v0.w), gAccel.z + (F0.z / v0.w), 0.f);
+
+	x0.x = x0.x + v0.x * dT + 0.5f * (a0.x) * dT * dT;
+	x0.y = x0.y + v0.y * dT + 0.5f * (a0.y) * dT * dT;
+	x0.z = x0.z + v0.z * dT + 0.5f * (a0.z) * dT * dT;
+	
+	float4 lookUpT1 = x0;
+	float4 F1 = read_imagef(gForceField, sampler, lookUpT1);
+	
+	float4 a1 = (float4)(gAccel.x + (F1.x / v0.w), gAccel.y + (F1.y / v0.w), gAccel.z + (F1.z / v0.w), 0.f);
+
+	v0.x = v0.x + 0.5f * (a0.x + a1.x) * dT;
+	v0.y = v0.y + 0.5f * (a0.y + a1.y) * dT;
+	v0.z = v0.z + 0.5f * (a0.z + a1.z) * dT;
+	
+
+
+	//x0.y = 0.2f * sin(x0.w * 5.f) + 0.3f;
 	x0.w -= dT;
 	gPosLife[get_global_id(0)] = x0;
+
+	gVelMass[get_global_id(0)] = v0;
 	
 	
 	// Check for collisions and correct the position and velocity of the particle if it collides with a triangle
