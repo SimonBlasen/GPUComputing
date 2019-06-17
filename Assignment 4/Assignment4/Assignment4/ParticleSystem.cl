@@ -69,7 +69,9 @@ bool CheckCollisions(	float4 x0, float4 x1,
 						__local float4* lTriangleCache,	// The cache should hold as many vertices as the number of threads (therefore the number of triangles is nThreads/3)
 						uint nTriangles,
 						float  *t,
-						float4 *n){
+						float4 *n,
+						int LSIZE,
+						int LID){
 
 
 	// ADD YOUR CODE HERE
@@ -100,8 +102,55 @@ bool CheckCollisions(	float4 x0, float4 x1,
 	//	Iterate over the triangles in the cache and test for the intersection
 	//	nProcessed += k;  
 	//}
-	return false;
 
+	
+	
+	bool didIntersec = false;
+	float minT = 2.f;
+	float tIsec;
+	float4 nIsec;
+
+	int iter = 0;
+	//int leftVerts = nTriangles * 3;
+	int leftVerts = (nTriangles * 3) - (iter * LSIZE);
+	while (leftVerts > 0)
+	{
+		if (LID + LSIZE * iter < nTriangles * 3)
+		{
+			lTriangleCache[LID] = gTriangleSoup[LID + LSIZE * iter];
+		}
+		
+		barrier(CLK_LOCAL_MEM_FENCE);
+		
+		int tri = 0;
+		while (tri < min(LSIZE, leftVerts))
+		{
+			if (LineTriangleIntersection(x0, x1, lTriangleCache[tri], lTriangleCache[tri + 1], lTriangleCache[tri + 2], &tIsec, &nIsec))
+			{
+				if (tIsec < minT)
+				{
+					didIntersec = true;
+					minT = tIsec;
+					//nIsec = nIsec;
+				}
+			}
+
+			tri += 3;
+
+		}
+
+		
+		iter++;
+		leftVerts = (nTriangles * 3) - (iter * LSIZE);
+		//leftVerts -= LSIZE;
+	}
+
+	*t = tIsec;
+	*n = nIsec;
+
+	return didIntersec;
+
+	//return true;
 }
 								
 
@@ -139,11 +188,21 @@ __kernel void Integrate(__global uint *gAlive,
 						float dT
 						)  {
 
+						
+	int GID = get_global_id(0);
+	
+	int LID = get_local_id(0);
+
+	int LSIZE = get_local_size(0);
+
+
+
 	float4 gAccel = (float4)(0.f, -9.81f, 0.f, 0.f);
 
 	// Verlet Velocity Integration
 	float4 x0 = gPosLife[get_global_id(0)];
 	float4 v0 = gVelMass[get_global_id(0)];
+	float4 x1;
 
 	float mass = v0.w;
 	float life = x0.w;
@@ -159,9 +218,9 @@ __kernel void Integrate(__global uint *gAlive,
 
 	float4 a0 = (float4)(gAccel.x + (F0.x / v0.w), gAccel.y + (F0.y / v0.w), gAccel.z + (F0.z / v0.w), 0.f);
 
-	x0.x = x0.x + v0.x * dT + 0.5f * (a0.x) * dT * dT;
-	x0.y = x0.y + v0.y * dT + 0.5f * (a0.y) * dT * dT;
-	x0.z = x0.z + v0.z * dT + 0.5f * (a0.z) * dT * dT;
+	x1.x = x0.x + v0.x * dT + 0.5f * (a0.x) * dT * dT;
+	x1.y = x0.y + v0.y * dT + 0.5f * (a0.y) * dT * dT;
+	x1.z = x0.z + v0.z * dT + 0.5f * (a0.z) * dT * dT;
 	
 	float4 lookUpT1 = x0;
 	float4 F1 = read_imagef(gForceField, sampler, lookUpT1);
@@ -175,15 +234,69 @@ __kernel void Integrate(__global uint *gAlive,
 
 
 	//x0.y = 0.2f * sin(x0.w * 5.f) + 0.3f;
-	x0.w -= dT;
-	gPosLife[get_global_id(0)] = x0;
-
-	gVelMass[get_global_id(0)] = v0;
+	x1.w -= dT;
+	
 	
 	
 	// Check for collisions and correct the position and velocity of the particle if it collides with a triangle
 	// - Don't forget to offset the particles from the surface a little bit, otherwise they might get stuck in it.
 	// - Dampen the velocity (e.g. by a factor of 0.7) to simulate dissipation of the energy.
+	/*
+	float t;
+	float4 n;
+
+	if (CheckCollisions(x0, x1, gTriangleSoup, lTriangleCache, nTriangles, &t, &n, LSIZE, LID))
+	{
+		//v0.x = -v0.x;
+		//v0.y = -v0.y;
+		//v0.z = -v0.z;
+
+		//if (t < 1.1)
+		//{
+		float4 newVel = v0 - 2.f * (dot3(v0, n)) * n;
+		newVel.w = v0.w;
+
+		v0 = newVel;
+		x1 = (x1 - x0) * t + x0;
+		x1 = x1 + EPSILON * n;
+		//}
+		
+	}*/
+
+	
+	gPosLife[get_global_id(0)] = x1;
+
+	gVelMass[get_global_id(0)] = v0;
+	
+
+
+	/*
+
+	
+	if (life > 0)
+	{
+		gPosLife[get_global_id(0)] = x1;
+
+		gVelMass[get_global_id(0)] = v0;
+	}
+	else
+	{
+		gPosLife[get_global_id(0)] = x0;
+
+		gVelMass[get_global_id(0)] = v0;
+	}
+
+	*/
+
+
+
+
+
+
+
+
+
+
 	
 	// Kill the particle if its life is < 0.0 by setting the corresponding flag in gAlive to 0.
 
