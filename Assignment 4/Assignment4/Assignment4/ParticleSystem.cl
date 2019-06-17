@@ -202,7 +202,7 @@ __kernel void Integrate(__global uint *gAlive,
 	// Verlet Velocity Integration
 	float4 x0 = gPosLife[get_global_id(0)];
 	float4 v0 = gVelMass[get_global_id(0)];
-	float4 x1;
+	float4 x1 = x0;
 
 	float mass = v0.w;
 	float life = x0.w;
@@ -222,7 +222,7 @@ __kernel void Integrate(__global uint *gAlive,
 	x1.y = x0.y + v0.y * dT + 0.5f * (a0.y) * dT * dT;
 	x1.z = x0.z + v0.z * dT + 0.5f * (a0.z) * dT * dT;
 	
-	float4 lookUpT1 = x0;
+	float4 lookUpT1 = x1;
 	float4 F1 = read_imagef(gForceField, sampler, lookUpT1);
 	
 	float4 a1 = (float4)(gAccel.x + (F1.x / v0.w), gAccel.y + (F1.y / v0.w), gAccel.z + (F1.z / v0.w), 0.f);
@@ -241,7 +241,7 @@ __kernel void Integrate(__global uint *gAlive,
 	// Check for collisions and correct the position and velocity of the particle if it collides with a triangle
 	// - Don't forget to offset the particles from the surface a little bit, otherwise they might get stuck in it.
 	// - Dampen the velocity (e.g. by a factor of 0.7) to simulate dissipation of the energy.
-	/*
+	
 	float t;
 	float4 n;
 
@@ -251,17 +251,14 @@ __kernel void Integrate(__global uint *gAlive,
 		//v0.y = -v0.y;
 		//v0.z = -v0.z;
 
-		//if (t < 1.1)
-		//{
 		float4 newVel = v0 - 2.f * (dot3(v0, n)) * n;
 		newVel.w = v0.w;
 
 		v0 = newVel;
 		x1 = (x1 - x0) * t + x0;
 		x1 = x1 + EPSILON * n;
-		//}
 		
-	}*/
+	}
 
 	
 	gPosLife[get_global_id(0)] = x1;
