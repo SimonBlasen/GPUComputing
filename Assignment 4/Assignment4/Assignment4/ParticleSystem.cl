@@ -16,7 +16,7 @@ float dot3(float4 a, float4 b){
 
 
 #define SPLIT_VELOCITY 4.f
-
+#define BOUNCE_OFFSET 0.01f
 
 #define EPSILON 0.001f
 
@@ -215,6 +215,7 @@ __kernel void Integrate(__global uint *gAlive,
 	lookUp.w = 0.f;
 
 	float4 F0 = read_imagef(gForceField, sampler, lookUp);
+	//F0 = (float4) (0,0,0,0);
 
 
 	// ADD YOUR CODE HERE (INSTEAD OF THE LINES BELOW) 
@@ -228,6 +229,7 @@ __kernel void Integrate(__global uint *gAlive,
 	
 	float4 lookUpT1 = x1;
 	float4 F1 = read_imagef(gForceField, sampler, lookUpT1);
+	//F1 = (float4) (0,0,0,0);
 	
 	float4 a1 = (float4)(gAccel.x + (F1.x / v0.w), gAccel.y + (F1.y / v0.w), gAccel.z + (F1.z / v0.w), 0.f);
 
@@ -254,6 +256,10 @@ __kernel void Integrate(__global uint *gAlive,
 		//v0.y = -v0.y;
 		//v0.z = -v0.z;
 
+		float4 ray = x1 - x0;
+		ray.w = 0.f;
+		ray = normalize(ray);
+
 		float4 newVel = v0 - 2.f * (dot3(v0, n)) * n;
 		newVel.w = v0.w;
 		newVel.x *= 0.7f;
@@ -262,7 +268,10 @@ __kernel void Integrate(__global uint *gAlive,
 
 		v0 = newVel;
 		x1 = (x1 - x0) * t + x0;
-		x1 = x1 + EPSILON * n;
+
+
+
+		x1 = x1 - BOUNCE_OFFSET * ray;
 		
 	}
 
@@ -333,7 +342,7 @@ __kernel void Reorganize(	__global uint* gAlive, __global uint* gRank,
 	uint readAd = GID;
 	uint writeAd = GID;
 
-	if (gRank[])
+	int offset = GID - gRank[GID];
 
 
 }

@@ -32,7 +32,7 @@ __kernel void Scan(__global uint* inArray, __global uint* outArray, __global uin
 
 
 	
-	localBlock[OFFSET(LID)] = array[GID * 2] + array[GID * 2 + 1];
+	localBlock[OFFSET(LID)] = inArray[GID * 2] + inArray[GID * 2 + 1];
 	
 	uint counter = 2;
 
@@ -72,14 +72,14 @@ __kernel void Scan(__global uint* inArray, __global uint* outArray, __global uin
 	}
 	
 
-	uint cached1 = array[GID * 2];
-	uint cached2 = array[GID * 2 + 1];
-	array[GID * 2] = localBlock[OFFSET(LID)] + cached1;
-	array[GID * 2 + 1] = localBlock[OFFSET(LID)] + cached1 + cached2;
+	uint cached1 = inArray[GID * 2];
+	uint cached2 = inArray[GID * 2 + 1];
+	inArray[GID * 2] = localBlock[OFFSET(LID)] + cached1;
+	inArray[GID * 2 + 1] = localBlock[OFFSET(LID)] + cached1 + cached2;
 
 	if (LID == (LSIZE - 1))
 	{
-		higherLevelArray[GID / LSIZE] = localBlock[OFFSET(LID)] + cached1 + cached2;
+		outArray[GID / LSIZE] = localBlock[OFFSET(LID)] + cached1 + cached2;
 	}
 	
 }
@@ -91,7 +91,7 @@ __kernel void ScanAdd(__global uint* higherLevelArray, __global uint* outArray, 
 	int LSIZE = get_local_size(0);
 
 
-	array[GID + LSIZE * 2] = array[GID + LSIZE * 2] + higherLevelArray[(GID) / (LSIZE * 2)];
+	outArray[GID + LSIZE * 2] = outArray[GID + LSIZE * 2] + higherLevelArray[(GID) / (LSIZE * 2)];
 	
 }
 

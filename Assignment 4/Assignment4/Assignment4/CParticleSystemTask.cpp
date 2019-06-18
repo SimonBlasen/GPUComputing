@@ -470,7 +470,7 @@ void CParticleSystemTask::ComputeGPU(cl_context Context, cl_command_queue Comman
 	// TO DO: 
 	// Enable these once you implement them
 	// Stream compaction
-	//Scan(Context, CommandQueue, LocalWorkSize);
+	Scan(Context, CommandQueue, LocalWorkSize);
 	//Reorganize(Context, CommandQueue, LocalWorkSize);
 
 
@@ -666,6 +666,91 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 
 	// Add your favorite prefix sum code here from Assignment 2 :)
 
+
+
+
+	cl_int clErr;
+	size_t globalWorkSize[1];
+	size_t localWorkSize[1];
+
+
+	unsigned int stride = 1;
+	unsigned int pingPong = 0;
+
+	unsigned int iteration = 0;
+
+	globalWorkSize[0] = m_N / 2;
+
+
+	while (globalWorkSize[0] > 0)
+	{
+		localWorkSize[0] = LocalWorkSize[0];
+
+		if (globalWorkSize[0] < localWorkSize[0])
+		{
+			localWorkSize[0] = globalWorkSize[0];
+		}
+
+		/*cout << "Running level " << iteration << endl;
+		cout << "  Threads: " << globalWorkSize[0] << endl;
+		cout << "  Size:    " << localWorkSize[0] << endl;*/
+
+		clErr = clFinish(CommandQueue);
+		clErr |= clSetKernelArg(m_ScanWorkEfficientKernel, 0, sizeof(cl_mem), (void*)&(m_dLevelArrays[iteration]));
+		clErr |= clSetKernelArg(m_ScanWorkEfficientKernel, 1, sizeof(cl_mem), (void*)&(m_dLevelArrays[iteration + 1]));
+		clErr |= clSetKernelArg(m_ScanWorkEfficientKernel, 2, sizeof(cl_uint) * LocalWorkSize[0] * 2, NULL);
+		clErr |= clFinish(CommandQueue);
+
+		clErr |= clEnqueueNDRangeKernel(CommandQueue, m_ScanWorkEfficientKernel, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+
+		if (clErr != CL_SUCCESS)
+		{
+			cout << "kernel execution failed" << endl;
+		}
+
+
+		iteration++;
+
+
+		globalWorkSize[0] = globalWorkSize[0] / ((unsigned int)(localWorkSize[0] * 2));
+	}
+
+	globalWorkSize[0] = localWorkSize[0] * 2;
+	size_t actGlobalWorkSize[1];
+
+	iteration--;
+
+	while (iteration > 0)
+	{
+		globalWorkSize[0] = globalWorkSize[0] * LocalWorkSize[0] * 2;
+		localWorkSize[0] = LocalWorkSize[0];
+
+		actGlobalWorkSize[0] = globalWorkSize[0] - (localWorkSize[0] * 2);
+
+		/*cout << "Running back level " << iteration << endl;
+		cout << "  Threads: " << actGlobalWorkSize[0] << endl;
+		cout << "  Size:    " << localWorkSize[0] << endl;*/
+
+
+		clErr = clFinish(CommandQueue);
+		clErr |= clSetKernelArg(m_ScanWorkEfficientAddKernel, 0, sizeof(cl_mem), (void*)&(m_dLevelArrays[iteration]));
+		clErr |= clSetKernelArg(m_ScanWorkEfficientAddKernel, 1, sizeof(cl_mem), (void*)&(m_dLevelArrays[iteration - 1]));
+		clErr |= clSetKernelArg(m_ScanWorkEfficientAddKernel, 2, sizeof(cl_uint), NULL);
+		clErr |= clFinish(CommandQueue);
+
+		clErr |= clEnqueueNDRangeKernel(CommandQueue, m_ScanWorkEfficientAddKernel, 1, NULL, actGlobalWorkSize, localWorkSize, 0, NULL, NULL);
+
+
+
+
+		if (clErr != CL_SUCCESS)
+		{
+			cout << "kernel execution failed" << endl;
+		}
+
+		iteration--;
+
+	}
 
 }
 
