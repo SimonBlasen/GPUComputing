@@ -15,8 +15,9 @@ float dot3(float4 a, float4 b){
 
 
 
-#define SPLIT_VELOCITY 3.5f
-#define BOUNCE_OFFSET 0.01f
+#define SPLIT_VELOCITY 0.5f
+#define BOUNCE_OFFSET 0.001f
+#define PARTICLE_START_LIFETIME 500.0f
 
 #define EPSILON 0.001f
 
@@ -295,7 +296,7 @@ __kernel void Integrate(__global uint *gAlive,
 	// For instance, if the particle gets too fast (or too high, or passes through some region), it is split into two...
 
 	
-	x1.w = life - dT * 1.0f;
+	x1.w = life - dT * 100.0f * (GID / 200000.0f);
 
 	if (x1.w <= 0.f)
 	{
@@ -303,16 +304,22 @@ __kernel void Integrate(__global uint *gAlive,
 	}
 	else if (gAlive[GID] != 1)
 	{
-		//gAlive[GID] = 1;
-		//gAlive[GID + nParticles] = 0;
+		gAlive[GID] = 1;
+		gAlive[GID + nParticles] = 0;
 	}
 
 	if (v0.x * v0.x + v0.y * v0.y + v0.z * v0.z >= SPLIT_VELOCITY * SPLIT_VELOCITY)
 	{
-		v0.x *= 0.5f;
-		v0.y *= 0.5f;
-		v0.z *= 0.5f;
+		//v0.x *= 0.5f;
+		//v0.y *= 0.5f;
+		//v0.z *= 0.5f;
+
+		float4 newX1 = x1;
+		newX1.w = PARTICLE_START_LIFETIME * 100.0f;
+
 		gAlive[GID + nParticles] = 1;
+		gPosLife[get_global_id(0) + nParticles] = newX1;
+		gVelMass[get_global_id(0) + nParticles] = v0;
 	}
 
 	
@@ -345,13 +352,39 @@ __kernel void Reorganize(	__global uint* gAlive, __global uint* gRank,
 	int LID = get_local_id(0);
 	int LSIZE = get_local_size(0);
 
-	uint readAd = GID;
-	uint writeAd = GID;
-	
+	//uint readAd = GID;
+	//uint writeAd = GID;
+
+
+	if (GID == 0 || ((gRank[GID] - gRank[GID - 1]) == 1))
+	{
+		uint rank = gRank[GID] - 1;
+		
+		if (rank >= 0 && rank < nParticles)
+		{
+			gAlive[rank] = gAlive[GID];
+			gPosLifeOut[rank] = gPosLifeIn[GID];
+			gVelMassOut[rank] = gVelMassIn[GID];
+
+			if (GID >= nParticles)
+			{
+				gAlive[GID] = 0;
+			}
+		}
+	}
+	else if (GID != 0 && GID * 2 < nParticles && ((gRank[GID] - gRank[GID - 1]) > 10))
+	{
+		//gAlive[100000000000] = 3;
+	}
+
+
+
+
+	/*
 		gAlive[GID] = gAlive[GID];
 		gPosLifeOut[GID] = gPosLifeIn[GID];
 		gVelMassOut[GID] = gVelMassIn[GID];
-		
+		*/
 
 
 

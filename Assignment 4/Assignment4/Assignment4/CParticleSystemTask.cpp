@@ -99,6 +99,17 @@ bool CParticleSystemTask::InitResources(cl_device_id Device, cl_context Context)
 		cout<<"Failed to create mesh OpenGL resources"<<endl;
 		return false;
 	}
+
+	//TODO remove
+
+
+
+	m_hResultCPU = new unsigned int[m_nParticles * 2];
+
+
+	//
+	//
+	//
 	
 	//CPU resources
 	cl_float4 *pPosLife	= new cl_float4[m_nParticles * 2];
@@ -403,6 +414,10 @@ void CParticleSystemTask::ReleaseResources()
 		delete m_pMesh;
 		m_pMesh = NULL;
 	}
+
+
+
+	SAFE_DELETE_ARRAY(m_hResultCPU);
 	
 	// Device resources
 
@@ -476,10 +491,23 @@ void CParticleSystemTask::ComputeGPU(cl_context Context, cl_command_queue Comman
 	// Enable these once you implement them
 	// Stream compaction
 	//V_RETURN_CL(clEnqueueWriteBuffer(CommandQueue, m_clLevelArrays[0], CL_FALSE, 0, m_nParticles * 2 * sizeof(cl_uint), &m_clAlive, 0, NULL, NULL), "Error copying data from host to device!");
-	V_RETURN_CL(clEnqueueCopyBuffer(CommandQueue, m_clAlive, m_clLevelArrays[0], 0, 0, m_nParticles * 2 * sizeof(cl_uint), 0, NULL, NULL), "Error copying from device to device");
+	V_RETURN_CL(clEnqueueCopyBuffer(CommandQueue, m_clAlive, m_clPingArray, 0, 0, m_nParticles * 2 * sizeof(cl_uint), 0, NULL, NULL), "Error copying from device to device");
 	Scan(Context, CommandQueue, LocalWorkSize);
 	//V_RETURN_CL(clEnqueueReadBuffer(CommandQueue, m_clLevelArrays[0], CL_TRUE, 0, m_nParticles * 2 * sizeof(cl_uint), &m_clRank, 0, NULL, NULL), "Error reading data from device!");
-	V_RETURN_CL(clEnqueueCopyBuffer(CommandQueue, m_clLevelArrays[0], m_clRank, 0, 0, m_nParticles * 2 * sizeof(cl_uint), 0, NULL, NULL), "Error copying from device to device");
+	V_RETURN_CL(clEnqueueCopyBuffer(CommandQueue, m_clPingArray, m_clRank, 0, 0, m_nParticles * 2 * sizeof(cl_uint), 0, NULL, NULL), "Error copying from device to device");
+	/*
+	V_RETURN_CL(clEnqueueReadBuffer(CommandQueue, m_clRank, CL_TRUE, 0, m_nParticles * 2 * sizeof(cl_uint), m_hResultCPU, 0, NULL, NULL), "Error reading data from device!");
+
+	cout << "Parts " << m_nParticles << endl;
+
+	for (int i = 0; i < 120; i++)
+	{
+		
+			cout << "[" << i << "] " << m_hResultCPU[i] << endl;
+		
+
+	}
+	*/
 
 
 
@@ -671,6 +699,61 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 {
 
 
+	LocalWorkSize[0] = 128;
+	LocalWorkSize[1] = 1;
+	LocalWorkSize[2] = 1;
+
+
+
+	cl_int clErr;
+	size_t globalWorkSize[1];
+	size_t localWorkSize[1];
+
+
+	m_NNaive = (m_nParticles * 2);
+
+	unsigned int stride = 1;
+	unsigned int pingPong = 0;
+
+	while (stride <= m_NNaive / 2)
+	{
+		globalWorkSize[0] = m_NNaive;
+		localWorkSize[0] = LocalWorkSize[0];
+		if (localWorkSize[0] > globalWorkSize[0])
+		{
+			localWorkSize[0] = globalWorkSize[0];
+		}
+
+
+		/*cout << "  Threads: " << globalWorkSize[0] << endl;
+		cout << "  Size:    " << localWorkSize[0] << endl;
+		cout << "  Stride:  " << stride << endl;*/
+
+
+		clErr = clFinish(CommandQueue);
+		clErr |= clSetKernelArg(m_ScanNaiveKernel, pingPong, sizeof(cl_mem), (void*)&m_clPingArray);
+		clErr |= clSetKernelArg(m_ScanNaiveKernel, 1 - pingPong, sizeof(cl_mem), (void*)&m_clPongArray);
+		clErr |= clSetKernelArg(m_ScanNaiveKernel, 2, sizeof(cl_uint), (void*)&m_NNaive);
+		clErr |= clSetKernelArg(m_ScanNaiveKernel, 3, sizeof(cl_uint), (void*)&stride);
+		clErr |= clFinish(CommandQueue);
+
+		clErr |= clEnqueueNDRangeKernel(CommandQueue, m_ScanNaiveKernel, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+
+		if (clErr != CL_SUCCESS)
+		{
+			cout << "kernel execution failed" << endl;
+		}
+
+		pingPong = 1 - pingPong;
+
+		stride *= 2;
+	}
+
+	if (pingPong == 1)
+		V_RETURN_CL(clEnqueueCopyBuffer(CommandQueue, m_clPongArray, m_clPingArray, 0, 0, sizeof(cl_uint) * m_NNaive, 0, NULL, NULL), "Error swapping ping pong");
+
+
+	/*
 	//********************************************************
 	// GPU Computing only!
 	// (If you are doing the smaller course, ignore this function)
@@ -679,7 +762,7 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 	// Add your favorite prefix sum code here from Assignment 2 :)
 
 
-	LocalWorkSize[0] = 64;
+	LocalWorkSize[0] = 128;
 	LocalWorkSize[1] = 1;
 	LocalWorkSize[2] = 1;
 
@@ -706,9 +789,6 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 			localWorkSize[0] = globalWorkSize[0];
 		}
 
-		/*cout << "Running level " << iteration << endl;
-		cout << "  Threads: " << globalWorkSize[0] << endl;
-		cout << "  Size:    " << localWorkSize[0] << endl;*/
 
 		clErr = clFinish(CommandQueue);
 		clErr |= clSetKernelArg(m_ScanKernel, 0, sizeof(cl_mem), (void*)&(m_clLevelArrays[iteration]));
@@ -742,9 +822,6 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 
 		actGlobalWorkSize[0] = globalWorkSize[0] - (localWorkSize[0] * 2);
 
-		/*cout << "Running back level " << iteration << endl;
-		cout << "  Threads: " << actGlobalWorkSize[0] << endl;
-		cout << "  Size:    " << localWorkSize[0] << endl;*/
 
 
 		clErr = clFinish(CommandQueue);
@@ -767,7 +844,7 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 
 	}
 
-
+	*/
 }
 
 
@@ -836,9 +913,9 @@ void CParticleSystemTask::Reorganize(cl_context , cl_command_queue CommandQueue,
 	
 	std::swap(m_clPosLife[0],	 m_clPosLife[1]);
 	std::swap(m_clVelMass[0],	 m_clVelMass[1]);
-	//std::swap(m_glPosLife[0],	 m_glPosLife[1]);
-	//std::swap(m_glVelMass[0],	 m_glVelMass[1]);
-	//std::swap(m_glTexVelMass[0], m_glTexVelMass[1]);	
+	std::swap(m_glPosLife[0],	 m_glPosLife[1]);
+	std::swap(m_glVelMass[0],	 m_glVelMass[1]);
+	std::swap(m_glTexVelMass[0], m_glTexVelMass[1]);	
 	
 }
 

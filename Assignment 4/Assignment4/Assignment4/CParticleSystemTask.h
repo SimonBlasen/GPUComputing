@@ -95,10 +95,13 @@ protected:
 	cl_mem				m_clVolTex3D = nullptr;
 	cl_mem				m_clPingArray = nullptr;
 	cl_mem				m_clPongArray = nullptr;
+	unsigned int		*m_hResultCPU;
 
 	// arrays for each level of the work-efficient scan
 	unsigned int		m_nLevels = 0;
 	cl_mem				*m_clLevelArrays = nullptr;
+
+	unsigned int		m_NNaive = 0;
 
 
 	// OpenCL program and kernels
