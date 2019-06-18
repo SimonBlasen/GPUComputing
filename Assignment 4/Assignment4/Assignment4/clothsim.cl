@@ -139,7 +139,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 
 	
-
+	
 
 
 	unsigned int partID = get_global_id(0) + get_global_id(1) * width;
@@ -256,9 +256,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		{
 			corVecSum = normalize(corVecSum) * (restDistance / 2.f);
 		}
-
-		float4 posin = d_posIn[partID];
-		posin.y -= 0.00002f;
 
 		d_posOut[partID] = d_posIn[partID] + corVecSum;
 
@@ -437,7 +434,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 
 
-
+	
 
 	// Corners
 
@@ -634,10 +631,11 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 
 
+	tile[LID.y + 2][LID.x + 2] = d_posIn[(GID.y) * width + GID.x];
 
-
-
-
+	
+	barrier(CLK_LOCAL_MEM_FENCE);
+	
 
 
 
@@ -693,6 +691,24 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 
 		
+		if (GID.y >= 2)
+		{
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 2][LID.x + 2], restDistance * 2) * WEIGHT_ORTHO_2;
+		}
+		if (GID.y <= height - 3)
+		{
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2], restDistance * 2) * WEIGHT_ORTHO_2;
+		}
+		if (GID.x >= 2)
+		{
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 - 2], restDistance * 2) * WEIGHT_ORTHO_2;
+		}
+		if (GID.x <= width - 3)
+		{
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 + 2], restDistance * 2) * WEIGHT_ORTHO_2;
+		}
+
+		
 
 		if (GID.y >= 2 && GID.x >= 2)
 		{
@@ -728,6 +744,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 
 		d_posOut[partID] = tile[LID.y + 2][LID.x + 2] + corVecSum;
+		//d_posOut[partID] = tile[LID.y + 2][LID.x + 2];
 
 
 	}
