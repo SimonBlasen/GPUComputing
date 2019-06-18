@@ -14,6 +14,10 @@ float dot3(float4 a, float4 b){
 }
 
 
+
+#define SPLIT_VELOCITY 4.f
+
+
 #define EPSILON 0.001f
 
 // This function expects two points defining a ray (x0 and x1)
@@ -234,7 +238,6 @@ __kernel void Integrate(__global uint *gAlive,
 
 
 	//x0.y = 0.2f * sin(x0.w * 5.f) + 0.3f;
-	x1.w -= dT;
 	
 	
 	
@@ -253,6 +256,9 @@ __kernel void Integrate(__global uint *gAlive,
 
 		float4 newVel = v0 - 2.f * (dot3(v0, n)) * n;
 		newVel.w = v0.w;
+		newVel.x *= 0.7f;
+		newVel.y *= 0.7f;
+		newVel.z *= 0.7f;
 
 		v0 = newVel;
 		x1 = (x1 - x0) * t + x0;
@@ -261,29 +267,8 @@ __kernel void Integrate(__global uint *gAlive,
 	}
 
 	
-	gPosLife[get_global_id(0)] = x1;
-
-	gVelMass[get_global_id(0)] = v0;
-	
 
 
-	/*
-
-	
-	if (life > 0)
-	{
-		gPosLife[get_global_id(0)] = x1;
-
-		gVelMass[get_global_id(0)] = v0;
-	}
-	else
-	{
-		gPosLife[get_global_id(0)] = x0;
-
-		gVelMass[get_global_id(0)] = v0;
-	}
-
-	*/
 
 
 
@@ -300,7 +285,27 @@ __kernel void Integrate(__global uint *gAlive,
 	// Independently of the status of the particle, possibly create a new one.
 	// For instance, if the particle gets too fast (or too high, or passes through some region), it is split into two...
 
+	
+	x1.w = life - dT * 1.0f;
 
+	if (x1.w <= 0.f)
+	{
+		gAlive[GID] = 0;
+	}
+
+	if (v0.x * v0.x + v0.y * v0.y + v0.z * v0.z >= SPLIT_VELOCITY * SPLIT_VELOCITY)
+	{
+		v0.x *= 0.5f;
+		v0.y *= 0.5f;
+		v0.z *= 0.5f;
+		gAlive[GID + nParticles] = 1;
+	}
+
+	
+	gPosLife[get_global_id(0)] = x1;
+	
+
+	gVelMass[get_global_id(0)] = v0;
 }
 
 
@@ -320,5 +325,15 @@ __kernel void Reorganize(	__global uint* gAlive, __global uint* gRank,
 
 	// Re-order the particles according to the gRank obtained from the parallel prefix sum
 	// ADD YOUR CODE HERE
+	
+	int GID = get_global_id(0);
+	int LID = get_local_id(0);
+	int LSIZE = get_local_size(0);
+
+	uint readAd = GID;
+	uint writeAd = GID;
+
+	if (gRank[])
+
 
 }
