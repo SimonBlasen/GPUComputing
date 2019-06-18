@@ -266,7 +266,8 @@ void CClothSimulationTask::ComputeGPU(cl_context , cl_command_queue CommandQueue
 	V_RETURN_CL(clErr, "Error executing m_IntegrateKernel");
 
 	// Check for collisions
-	
+
+
 	// Constraint relaxation: use the ping-pong technique and perform the relaxation in several iterations
 	for (unsigned int i = 0; i < 2.0 * m_ClothResX; i++) {
 	//
@@ -275,19 +276,26 @@ void CClothSimulationTask::ComputeGPU(cl_context , cl_command_queue CommandQueue
 
 		if (i % 2 == 1)
 		{
-			clErr = clSetKernelArg(m_ConstraintKernel, 3, sizeof(cl_mem), (void*)&m_clPosArrayOld);
+			clErr = clSetKernelArg(m_ConstraintKernel, 3, sizeof(cl_mem), (void*)&m_clPosArray);
 			clErr |= clSetKernelArg(m_ConstraintKernel, 4, sizeof(cl_mem), (void*)&m_clPosArrayAux);
 		}
 		else
 		{
 			clErr = clSetKernelArg(m_ConstraintKernel, 3, sizeof(cl_mem), (void*)&m_clPosArrayAux);
-			clErr |= clSetKernelArg(m_ConstraintKernel, 4, sizeof(cl_mem), (void*)&m_clPosArrayOld);
+			clErr |= clSetKernelArg(m_ConstraintKernel, 4, sizeof(cl_mem), (void*)&m_clPosArray);
 		}
 		V_RETURN_CL(clErr, "Failed to set m_ConstraintKernel params");
 		clErr = clEnqueueNDRangeKernel(CommandQueue, m_ConstraintKernel, 2, 0, globalWorkSize, LocalWorkSize, 0, 0, 0);
 		V_RETURN_CL(clErr, "Error executing m_ConstraintKernel");
 
-	//	 if(i % 3 == 0)
+		if (i % 3 == 0)
+		{
+			clErr = clSetKernelArg(m_CollisionsKernel, 3, sizeof(hlsl::float4), &m_SpherePos);
+			clErr |= clSetKernelArg(m_CollisionsKernel, 4, sizeof(float), &m_SphereRadius);
+			V_RETURN_CL(clErr, "Failed to set m_CollisionsKernel params");
+			clErr = clEnqueueNDRangeKernel(CommandQueue, m_CollisionsKernel, 2, 0, globalWorkSize, LocalWorkSize, 0, 0, 0);
+			V_RETURN_CL(clErr, "Error executing m_CollisionsKernel");
+		}
 	//		 Occasionally check for collisions
 	//
 	//	 Swap the ping pong buffers
