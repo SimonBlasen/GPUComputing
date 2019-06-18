@@ -42,7 +42,7 @@ CAssignment4::CAssignment4()
 	// select task here...
 	// This time you have to do it during compile time
 	
-#if 1
+#if 0
 	cout<<"########################################"<<endl;
 	cout<<"TASK 1: Particle System"<<endl<<endl;
 

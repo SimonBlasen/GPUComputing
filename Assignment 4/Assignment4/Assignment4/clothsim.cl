@@ -1,8 +1,8 @@
 #define DAMPING 0.02f
 
-#define G_ACCEL (float4)(0.f, -9.81f, 0.f, 0.f)
+#define G_ACCEL (0.f, -9.81f, 0.f, 0.f)
 
-#define WEIGHT_ORTHO	0.138f
+#define WEIGHT_ORTHO	0.00000138f
 #define WEIGHT_DIAG		0.097f
 #define WEIGHT_ORTHO_2	0.069f
 #define WEIGHT_DIAG_2	0.048f
@@ -41,10 +41,20 @@
     if(get_global_id(0) >= width || get_global_id(1) >= height)
 		return;
 
+
+
+
+
+	//elapsedTime *= 0.04f;
+
+
+
+
 	unsigned int particleID = get_global_id(0) + get_global_id(1) * width;
 	// This is just to keep every 8th particle of the first row attached to the bar
     if(particleID > width-1 || ( particleID & ( 7 )) != 0){
 
+		float4 windA = (float4)0;//(float4) (0.f, 0.f, sin(simulationTime * 1.0f) * 10.f, 0.f);
 
 		// ADD YOUR CODE HERE!
 
@@ -52,6 +62,26 @@
 		// Compute the new one position using the Verlet position integration, taking into account gravity and wind
 		// Move the value from d_pos into d_prevPos and store the new one in d_pos
 
+
+		float4 x0 = d_prevPos[particleID];
+		float4 x1 = d_pos[particleID];
+
+		float4 v1 = (x1 - x0);
+		v1.x /= elapsedTime;
+		v1.y /= elapsedTime;
+		v1.z /= elapsedTime;
+		if (v1.y < 100.f && v1.y > -100.f)
+		{
+			float4 a1 = windA + G_ACCEL;
+
+			float4 x2 = x1 + v1 * elapsedTime + 0.5f * a1 * elapsedTime * elapsedTime;
+
+			x2.w = 0.f;
+
+			d_pos[particleID] = x2; //x1 + ((float4)(0.f, -0.001f, 0.f, 0.f));
+		}
+		x1.w = 0.f;
+		d_prevPos[particleID] = x1;
 
     }
 }
@@ -106,6 +136,184 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 	// Hint: you should use the SatisfyConstraint helper function in the following manner:
 	//SatisfyConstraint(pos, neighborpos, restDistance) * WEIGHT_XXX
+
+	
+	unsigned int particleID = get_global_id(0) + get_global_id(1) * width;
+	// This is just to keep every 8th particle of the first row attached to the bar
+    if(particleID > width-1 || ( particleID & ( 7 )) != 0){
+
+	
+	
+		int2 GID;
+		GID.x = get_global_id(0);
+		GID.y = get_global_id(1);
+		
+		int2 LID;
+		LID.x = get_local_id(0);
+		LID.y = get_local_id(1);
+
+		int2 LSIZE;
+		LSIZE.x = get_local_size(0);
+		LSIZE.y = get_local_size(1);
+
+
+
+		float4 corVecSum = (float4)0;
+
+		uint partID = GID.y * width + GID.x;
+
+		if (GID.y >= 1)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 1) * width + GID.x], restDistance) * WEIGHT_ORTHO;
+		}
+		if (GID.y <= height - 2)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 1) * width + GID.x], restDistance) * WEIGHT_ORTHO;
+		}
+		if (GID.x >= 1)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y) * width + GID.x - 1], restDistance) * WEIGHT_ORTHO;
+		}
+		if (GID.x <= width - 2)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y) * width + GID.x + 1], restDistance) * WEIGHT_ORTHO;
+		}
+
+		/*
+
+		
+
+		if (GID.y >= 1 && GID.x >= 1)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 1) * width + GID.x - 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
+		}
+		if (GID.y <= height - 2 && GID.x >= 1)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 1) * width + GID.x - 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
+		}
+		if (GID.x <= width - 2 && GID.y >= 1)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 1) * width + GID.x + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
+		}
+		if (GID.x <= width - 2 && GID.y <= height - 2)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 1) * width + GID.x + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
+		}
+
+
+		
+
+		if (GID.y >= 2 && GID.x >= 2)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 2) * width + GID.x - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
+		}
+		if (GID.y <= height - 3 && GID.x >= 2)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 2) * width + GID.x - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
+		}
+		if (GID.x <= width - 3 && GID.y >= 2)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 2) * width + GID.x + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
+		}
+		if (GID.x <= width - 3 && GID.y <= height - 3)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 2) * width + GID.x + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
+		}
+		*/
+
+		corVecSum.w = 0.f;
+
+
+
+
+
+
+
+
+		//if (corVecSum.x * corVecSum.x + corVecSum.y * corVecSum.y + corVecSum.z * corVecSum.z > 0.01f * ((restDistance * 0.5f) * (restDistance * 0.5f)))
+		if (length(corVecSum) > (restDistance / 2.f))
+		{
+			corVecSum = normalize(corVecSum) * (restDistance * 0.5f);
+		}
+
+		//d_posOut[partID] = d_posIn[partID] + ((float4)(0.f, 1.f, 0.f, 0.f));//d_posIn[partID] + corVecSum;
+
+
+	}
+
+
+
+
+
+
+
+
+
+	/*
+
+	
+	__local float tile[TILE_X + HALOSIZE * 2][TILE_Y + HALOSIZE * 2];
+
+
+
+	// Top side halo
+
+	if (LID.y == 0)
+	{
+		if (GID.y == 0)
+		{
+			tile[0][LID.x + 2] = (float4)0;
+		}
+		else
+		{
+			tile[0][LID.x + 2] = d_posIn[(GID.y - 2) * width + GID.x];
+		}
+	}
+	if (LID.y == 1)
+	{
+		if (GID.y == 1)
+		{
+			tile[0][LID.x + 2] = (float4)0;
+		}
+		else
+		{
+			tile[1][LID.x + 2] = d_posIn[(GID.y - 1) * width + GID.x];
+		}
+	}
+
+
+
+
+
+
+	// Down side halo
+
+	if (LID.y == LSIZE.y - 1)
+	{
+		if (GID.y == height - 1)
+		{
+			tile[TILE_Y + 3][LID.x + 2] = (float4)0;
+		}
+		else
+		{
+			tile[TILE_Y + 3][LID.x + 2] = d_posIn[(GID.y + 2) * width + GID.x];
+		}
+	}
+	if (LID.y == LSIZE.y - 2)
+	{
+		if (GID.y == height - 2)
+		{
+			tile[TILE_Y + 3][LID.x + 2] = (float4)0;
+		}
+		else
+		{
+			tile[0][LID.x + 2] = d_posIn[(GID.y - 2) * width + GID.x];
+		}
+	}
+	*/
+
+
+
 
 }
 
