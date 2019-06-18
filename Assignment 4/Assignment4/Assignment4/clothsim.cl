@@ -138,7 +138,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 	//SatisfyConstraint(pos, neighborpos, restDistance) * WEIGHT_XXX
 
 
-	/*
+	
 
 
 
@@ -205,7 +205,23 @@ __kernel void SatisfyConstraints(unsigned int width,
 			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 1) * width + GID.x + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
 		}
 
-
+		
+		if (GID.y >= 2)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 2) * width + GID.x], restDistance * 2) * WEIGHT_ORTHO_2;
+		}
+		if (GID.y <= height - 3)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 2) * width + GID.x], restDistance * 2) * WEIGHT_ORTHO_2;
+		}
+		if (GID.x >= 2)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y) * width + GID.x - 2], restDistance * 2) * WEIGHT_ORTHO_2;
+		}
+		if (GID.x <= width - 3)
+		{
+			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y) * width + GID.x + 2], restDistance * 2) * WEIGHT_ORTHO_2;
+		}
 		
 
 		if (GID.y >= 2 && GID.x >= 2)
@@ -256,10 +272,10 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 
 
-	*/
+	
 
 
-
+	/*
 	
 	
 
@@ -280,7 +296,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 	
 
 	
-	__local float4 tile[TILE_X + HALOSIZE * 2][TILE_Y + HALOSIZE * 2];
+	__local float4 tile[TILE_Y + HALOSIZE * 2][TILE_X + HALOSIZE * 2];
 
 
 
@@ -305,7 +321,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[1][LID.x + 2] = d_posIn[(GID.y - 1) * width + GID.x];
+			tile[1][LID.x + 2] = d_posIn[(GID.y - 2) * width + GID.x];
 		}
 	}
 
@@ -335,7 +351,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[TILE_Y + 2][LID.x + 2] = d_posIn[(GID.y + 1) * width + GID.x];
+			tile[TILE_Y + 2][LID.x + 2] = d_posIn[(GID.y + 2) * width + GID.x];
 		}
 	}
 
@@ -374,7 +390,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[LID.y + 2][1] = d_posIn[(GID.y) * width + GID.x - 1];
+			tile[LID.y + 2][1] = d_posIn[(GID.y) * width + GID.x - 2];
 		}
 	}
 
@@ -404,7 +420,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[LID.y + 2][TILE_X + 2] = d_posIn[(GID.y) * width + GID.x + 1];
+			tile[LID.y + 2][TILE_X + 2] = d_posIn[(GID.y) * width + GID.x + 2];
 		}
 	}
 	
@@ -434,7 +450,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[0][0] = d_posIn[(GID.y - 2) * width + GID.x - 2];
+			tile[0][0] = d_posIn[(GID.y - 4) * width + GID.x - 4];
 		}
 	}
 	if (LID.x == 3 && LID.y == 2)
@@ -445,7 +461,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[0][1] = d_posIn[(GID.y - 2) * width + GID.x - 2];
+			tile[0][1] = d_posIn[(GID.y - 4) * width + GID.x - 4];
 		}
 	}
 	if (LID.x == 2 && LID.y == 3)
@@ -456,7 +472,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[1][0] = d_posIn[(GID.y - 2) * width + GID.x - 2];
+			tile[1][0] = d_posIn[(GID.y - 4) * width + GID.x - 4];
 		}
 	}
 	if (LID.x == 3 && LID.y == 3)
@@ -467,7 +483,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[1][1] = d_posIn[(GID.y - 2) * width + GID.x - 2];
+			tile[1][1] = d_posIn[(GID.y - 4) * width + GID.x - 4];
 		}
 	}
 
@@ -482,7 +498,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[0][TILE_X + 3] = d_posIn[(GID.y - 2) * width + GID.x + 2];
+			tile[0][TILE_X + 3] = d_posIn[(GID.y - 4) * width + GID.x + 4];
 		}
 	}
 	if (LID.x == LSIZE.x - 4 && LID.y == 2)
@@ -493,7 +509,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[0][TILE_X + 2] = d_posIn[(GID.y - 2) * width + GID.x + 2];
+			tile[0][TILE_X + 2] = d_posIn[(GID.y - 4) * width + GID.x + 4];
 		}
 	}
 	if (LID.x == LSIZE.x - 3 && LID.y == 3)
@@ -504,7 +520,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[1][TILE_X + 3] = d_posIn[(GID.y - 2) * width + GID.x + 2];
+			tile[1][TILE_X + 3] = d_posIn[(GID.y - 4) * width + GID.x + 4];
 		}
 	}
 	if (LID.x == LSIZE.x - 4 && LID.y == 3)
@@ -515,7 +531,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[1][TILE_X + 4] = d_posIn[(GID.y - 2) * width + GID.x + 2];
+			tile[1][TILE_X + 4] = d_posIn[(GID.y - 4) * width + GID.x + 4];
 		}
 	}
 
@@ -530,7 +546,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[TILE_Y + 3][0] = d_posIn[(GID.y + 2) * width + GID.x - 2];
+			tile[TILE_Y + 3][0] = d_posIn[(GID.y + 4) * width + GID.x - 4];
 		}
 	}
 	if (LID.x == 3 && LID.y == LSIZE.y - 3)
@@ -541,7 +557,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[TILE_Y + 3][1] = d_posIn[(GID.y + 2) * width + GID.x - 2];
+			tile[TILE_Y + 3][1] = d_posIn[(GID.y + 4) * width + GID.x - 4];
 		}
 	}
 	if (LID.x == 2 && LID.y == LSIZE.y - 4)
@@ -552,7 +568,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[TILE_Y + 2][0] = d_posIn[(GID.y + 2) * width + GID.x - 2];
+			tile[TILE_Y + 2][0] = d_posIn[(GID.y + 4) * width + GID.x - 4];
 		}
 	}
 	if (LID.x == 3 && LID.y == LSIZE.y - 4)
@@ -563,7 +579,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[TILE_Y + 2][1] = d_posIn[(GID.y + 2) * width + GID.x - 2];
+			tile[TILE_Y + 2][1] = d_posIn[(GID.y + 4) * width + GID.x - 4];
 		}
 	}
 
@@ -578,7 +594,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[TILE_Y + 3][TILE_X + 3] = d_posIn[(GID.y + 2) * width + GID.x + 2];
+			tile[TILE_Y + 3][TILE_X + 3] = d_posIn[(GID.y + 4) * width + GID.x + 4];
 		}
 	}
 	if (LID.x == LSIZE.x - 4 && LID.y == LSIZE.y - 3)
@@ -589,7 +605,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[TILE_Y + 3][TILE_X + 2] = d_posIn[(GID.y + 2) * width + GID.x + 2];
+			tile[TILE_Y + 3][TILE_X + 2] = d_posIn[(GID.y + 4) * width + GID.x + 4];
 		}
 	}
 	if (LID.x == LSIZE.x - 3 && LID.y == LSIZE.y - 4)
@@ -600,7 +616,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[TILE_Y + 2][TILE_X + 3] = d_posIn[(GID.y + 2) * width + GID.x + 2];
+			tile[TILE_Y + 2][TILE_X + 3] = d_posIn[(GID.y + 4) * width + GID.x + 4];
 		}
 	}
 	if (LID.x == LSIZE.x - 4 && LID.y == LSIZE.y - 4)
@@ -611,7 +627,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			tile[TILE_Y + 2][TILE_X + 2] = d_posIn[(GID.y + 2) * width + GID.x + 2];
+			tile[TILE_Y + 2][TILE_X + 2] = d_posIn[(GID.y + 4) * width + GID.x + 4];
 		}
 	}
 
@@ -639,19 +655,19 @@ __kernel void SatisfyConstraints(unsigned int width,
 		
 		if (GID.y >= 1)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y - 1][LID.x], restDistance) * WEIGHT_ORTHO;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2], restDistance) * WEIGHT_ORTHO;
 		}
 		if (GID.y <= height - 2)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y + 1][LID.x], restDistance) * WEIGHT_ORTHO;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2], restDistance) * WEIGHT_ORTHO;
 		}
 		if (GID.x >= 1)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y][LID.x - 1], restDistance) * WEIGHT_ORTHO;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 - 1], restDistance) * WEIGHT_ORTHO;
 		}
 		if (GID.x <= width - 2)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y][LID.x + 1], restDistance) * WEIGHT_ORTHO;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 + 1], restDistance) * WEIGHT_ORTHO;
 		}
 		
 		
@@ -660,19 +676,19 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 		if (GID.y >= 1 && GID.x >= 1)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y - 1][LID.x - 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2 - 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
 		}
 		if (GID.y <= height - 2 && GID.x >= 1)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y + 1][LID.x - 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2 - 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
 		}
 		if (GID.x <= width - 2 && GID.y >= 1)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y - 1][LID.x + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2 + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
 		}
 		if (GID.x <= width - 2 && GID.y <= height - 2)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y + 1][LID.x + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2 + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
 		}
 
 
@@ -680,19 +696,19 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 		if (GID.y >= 2 && GID.x >= 2)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y - 2][LID.x - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 2][LID.x + 2 - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
 		}
 		if (GID.y <= height - 3 && GID.x >= 2)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y + 2][LID.x - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2 - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
 		}
 		if (GID.x <= width - 3 && GID.y >= 2)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y - 2][LID.x + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 2][LID.x + 2 + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
 		}
 		if (GID.x <= width - 3 && GID.y <= height - 3)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y][LID.x], tile[LID.y + 2][LID.x + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
+			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2 + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
 		}
 		
 
@@ -711,13 +727,13 @@ __kernel void SatisfyConstraints(unsigned int width,
 			corVecSum = normalize(corVecSum) * (restDistance / 2.f);
 		}
 
-		d_posOut[partID] = tile[LID.y][LID.x] + corVecSum;
+		d_posOut[partID] = tile[LID.y + 2][LID.x + 2] + corVecSum;
 
 
 	}
 	else
 	{
-		d_posOut[partID] = tile[LID.y][LID.x];
+		d_posOut[partID] = tile[LID.y + 2][LID.x + 2];
 	}
 
 
@@ -725,7 +741,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 
 
-
+	*/
 
 	
 
@@ -761,12 +777,13 @@ __kernel void CheckCollisions(unsigned int width,
 	// This is just to keep every 8th particle of the first row attached to the bar
     if(partID > width-1 || ( partID & ( 7 )) != 0)
 	{
+		float4 posss = d_pos[partID];
 		spherePos.w = 0.f;
-		float4 vecToMid = d_pos[partID] - spherePos;
+		float4 vecToMid = posss - spherePos;
 		float len = length(vecToMid);
 		if (len < sphereRad)
 		{
-			d_pos[partID] += normalize(vecToMid) * (sphereRad - len) * 0.5f;
+			d_pos[partID] = posss + normalize(vecToMid) * (sphereRad - len) * 0.5f;
 		}
 	}
 
