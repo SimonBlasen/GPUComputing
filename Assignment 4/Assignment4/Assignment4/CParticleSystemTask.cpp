@@ -62,6 +62,8 @@ CParticleSystemTask::CParticleSystemTask(
 	}
 	m_clLevelArrays = new cl_mem[m_nLevels];
 
+	cout << "Created level arrays with amount of levels: " << m_nLevels << endl;
+
 	for (unsigned int i = 0; i < m_nLevels; i++)
 		m_clLevelArrays[i] = NULL;
 
@@ -185,6 +187,8 @@ bool CParticleSystemTask::InitResources(cl_device_id Device, cl_context Context)
 	m_clVelMass[1] = clCreateFromGLBuffer(Context, CL_MEM_READ_WRITE, m_glVelMass[1], &clError2);
 	clError |= clError2;
 	m_clAlive = clCreateBuffer(Context, CL_MEM_READ_WRITE, m_nParticles * sizeof(cl_uint) * 2, NULL, &clError2);
+	clError |= clError2;
+	m_clRank = clCreateBuffer(Context, CL_MEM_READ_WRITE, m_nParticles * sizeof(cl_uint) * 2, NULL, &clError2);
 	clError |= clError2;
 
 	float *pTriangles;
@@ -407,6 +411,7 @@ void CParticleSystemTask::ReleaseResources()
 	SAFE_RELEASE_MEMOBJECT(m_clVelMass[0]);
 	SAFE_RELEASE_MEMOBJECT(m_clVelMass[1]);
 	SAFE_RELEASE_MEMOBJECT(m_clAlive);
+	SAFE_RELEASE_MEMOBJECT(m_clRank);
 	SAFE_RELEASE_MEMOBJECT(m_clTriangleSoup);
 	SAFE_RELEASE_MEMOBJECT(m_clPingArray);
 	SAFE_RELEASE_MEMOBJECT(m_clPongArray);
@@ -470,8 +475,15 @@ void CParticleSystemTask::ComputeGPU(cl_context Context, cl_command_queue Comman
 	// TO DO: 
 	// Enable these once you implement them
 	// Stream compaction
+	//V_RETURN_CL(clEnqueueWriteBuffer(CommandQueue, m_clLevelArrays[0], CL_FALSE, 0, m_nParticles * 2 * sizeof(cl_uint), &m_clAlive, 0, NULL, NULL), "Error copying data from host to device!");
+	V_RETURN_CL(clEnqueueCopyBuffer(CommandQueue, m_clAlive, m_clLevelArrays[0], 0, 0, m_nParticles * 2 * sizeof(cl_uint), 0, NULL, NULL), "Error copying from device to device");
 	Scan(Context, CommandQueue, LocalWorkSize);
-	//Reorganize(Context, CommandQueue, LocalWorkSize);
+	//V_RETURN_CL(clEnqueueReadBuffer(CommandQueue, m_clLevelArrays[0], CL_TRUE, 0, m_nParticles * 2 * sizeof(cl_uint), &m_clRank, 0, NULL, NULL), "Error reading data from device!");
+	V_RETURN_CL(clEnqueueCopyBuffer(CommandQueue, m_clLevelArrays[0], m_clRank, 0, 0, m_nParticles * 2 * sizeof(cl_uint), 0, NULL, NULL), "Error copying from device to device");
+
+
+
+	Reorganize(Context, CommandQueue, LocalWorkSize);
 
 
 	V_RETURN_CL(clEnqueueReleaseGLObjects(CommandQueue, 1, &m_clPosLife[0], 0, NULL, NULL),  "Error releasing OpenGL buffer.");
@@ -667,6 +679,9 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 	// Add your favorite prefix sum code here from Assignment 2 :)
 
 
+	LocalWorkSize[0] = 64;
+	LocalWorkSize[1] = 1;
+	LocalWorkSize[2] = 1;
 
 
 	cl_int clErr;
@@ -679,7 +694,7 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 
 	unsigned int iteration = 0;
 
-	globalWorkSize[0] = m_N / 2;
+	globalWorkSize[0] = m_nParticles;
 
 
 	while (globalWorkSize[0] > 0)
@@ -696,16 +711,16 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 		cout << "  Size:    " << localWorkSize[0] << endl;*/
 
 		clErr = clFinish(CommandQueue);
-		clErr |= clSetKernelArg(m_ScanWorkEfficientKernel, 0, sizeof(cl_mem), (void*)&(m_dLevelArrays[iteration]));
-		clErr |= clSetKernelArg(m_ScanWorkEfficientKernel, 1, sizeof(cl_mem), (void*)&(m_dLevelArrays[iteration + 1]));
-		clErr |= clSetKernelArg(m_ScanWorkEfficientKernel, 2, sizeof(cl_uint) * LocalWorkSize[0] * 2, NULL);
+		clErr |= clSetKernelArg(m_ScanKernel, 0, sizeof(cl_mem), (void*)&(m_clLevelArrays[iteration]));
+		clErr |= clSetKernelArg(m_ScanKernel, 1, sizeof(cl_mem), (void*)&(m_clLevelArrays[iteration + 1]));
+		clErr |= clSetKernelArg(m_ScanKernel, 2, sizeof(cl_uint) * LocalWorkSize[0] * 2, NULL);
 		clErr |= clFinish(CommandQueue);
 
-		clErr |= clEnqueueNDRangeKernel(CommandQueue, m_ScanWorkEfficientKernel, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+		clErr |= clEnqueueNDRangeKernel(CommandQueue, m_ScanKernel, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 
 		if (clErr != CL_SUCCESS)
 		{
-			cout << "kernel execution failed" << endl;
+			cout << "kernel execution failed at " << iteration << endl;
 		}
 
 
@@ -733,12 +748,12 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 
 
 		clErr = clFinish(CommandQueue);
-		clErr |= clSetKernelArg(m_ScanWorkEfficientAddKernel, 0, sizeof(cl_mem), (void*)&(m_dLevelArrays[iteration]));
-		clErr |= clSetKernelArg(m_ScanWorkEfficientAddKernel, 1, sizeof(cl_mem), (void*)&(m_dLevelArrays[iteration - 1]));
-		clErr |= clSetKernelArg(m_ScanWorkEfficientAddKernel, 2, sizeof(cl_uint), NULL);
+		clErr |= clSetKernelArg(m_ScanAddKernel, 0, sizeof(cl_mem), (void*)&(m_clLevelArrays[iteration]));
+		clErr |= clSetKernelArg(m_ScanAddKernel, 1, sizeof(cl_mem), (void*)&(m_clLevelArrays[iteration - 1]));
+		clErr |= clSetKernelArg(m_ScanAddKernel, 2, sizeof(cl_uint), NULL);
 		clErr |= clFinish(CommandQueue);
 
-		clErr |= clEnqueueNDRangeKernel(CommandQueue, m_ScanWorkEfficientAddKernel, 1, NULL, actGlobalWorkSize, localWorkSize, 0, NULL, NULL);
+		clErr |= clEnqueueNDRangeKernel(CommandQueue, m_ScanAddKernel, 1, NULL, actGlobalWorkSize, localWorkSize, 0, NULL, NULL);
 
 
 
@@ -751,6 +766,7 @@ void CParticleSystemTask::Scan(cl_context , cl_command_queue CommandQueue, size_
 		iteration--;
 
 	}
+
 
 }
 
@@ -789,16 +805,41 @@ void CParticleSystemTask::Reorganize(cl_context , cl_command_queue CommandQueue,
 
 	// Clear
 	// ADD YOUR CODE HERE
+	cl_int clErr;
+	size_t globalWorkSize[1];
+
+
+	globalWorkSize[0] = CLUtil::GetGlobalWorkSize(m_nParticles, LocalWorkSize[0]);
+	clErr = clSetKernelArg(m_ClearKernel, 0, sizeof(cl_mem), (void*)&(m_clPosLife[1]));
+	clErr |= clSetKernelArg(m_ClearKernel, 1, sizeof(cl_mem), (void*)&(m_clVelMass[1]));
+	V_RETURN_CL(clErr, "Failed to set args for m_ClearKernel");
+	clErr = clEnqueueNDRangeKernel(CommandQueue, m_ClearKernel, 1, NULL, globalWorkSize, LocalWorkSize, 0, NULL, NULL);
+	V_RETURN_CL(clErr, "Error executing m_ClearKernel!");
 
 	// Reorganize (perform the actual compaction)
 	// ADD YOUR CODE HERE
 
 
+
+	globalWorkSize[0] = CLUtil::GetGlobalWorkSize(m_nParticles * 2, LocalWorkSize[0]);
+	clErr = clSetKernelArg(m_ReorganizeKernel, 0, sizeof(cl_mem), (void*)&m_clAlive);
+	clErr |= clSetKernelArg(m_ReorganizeKernel, 1, sizeof(cl_mem), (void*)&m_clRank);
+	clErr |= clSetKernelArg(m_ReorganizeKernel, 2, sizeof(cl_mem), (void*)&(m_clPosLife[0]));
+	clErr |= clSetKernelArg(m_ReorganizeKernel, 3, sizeof(cl_mem), (void*)&(m_clVelMass[0]));
+	clErr |= clSetKernelArg(m_ReorganizeKernel, 4, sizeof(cl_mem), (void*)&(m_clPosLife[1]));
+	clErr |= clSetKernelArg(m_ReorganizeKernel, 5, sizeof(cl_mem), (void*)&(m_clVelMass[1]));
+	clErr |= clSetKernelArg(m_ReorganizeKernel, 6, sizeof(cl_uint), (void*)&m_nParticles);
+	V_RETURN_CL(clErr, "Failed to set args for m_ReorganizeKernel");
+	clErr = clEnqueueNDRangeKernel(CommandQueue, m_ReorganizeKernel, 1, NULL, globalWorkSize, LocalWorkSize, 0, NULL, NULL);
+	V_RETURN_CL(clErr, "Error executing m_ReorganizeKernel!");
+	
+	
 	std::swap(m_clPosLife[0],	 m_clPosLife[1]);
 	std::swap(m_clVelMass[0],	 m_clVelMass[1]);
-	std::swap(m_glPosLife[0],	 m_glPosLife[1]);
-	std::swap(m_glVelMass[0],	 m_glVelMass[1]);
-	std::swap(m_glTexVelMass[0], m_glTexVelMass[1]);	
+	//std::swap(m_glPosLife[0],	 m_glPosLife[1]);
+	//std::swap(m_glVelMass[0],	 m_glVelMass[1]);
+	//std::swap(m_glTexVelMass[0], m_glTexVelMass[1]);	
+	
 }
 
 ///////////////////////////////////////////////////////////////////////////////

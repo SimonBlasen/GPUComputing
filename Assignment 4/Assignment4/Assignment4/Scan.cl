@@ -24,7 +24,7 @@
 
 
 
-__kernel void Scan(__global uint* inArray, __global uint* outArray, __global uint* higherLevelArray, __local uint* localBlock) 
+__kernel void Scan(__global uint* inArray, __global uint* higherLevelArray, __local uint* localBlock) 
 {
 	int GID = get_global_id(0);
 	int LID = get_local_id(0);
@@ -79,7 +79,7 @@ __kernel void Scan(__global uint* inArray, __global uint* outArray, __global uin
 
 	if (LID == (LSIZE - 1))
 	{
-		outArray[GID / LSIZE] = localBlock[OFFSET(LID)] + cached1 + cached2;
+		higherLevelArray[GID / LSIZE] = localBlock[OFFSET(LID)] + cached1 + cached2;
 	}
 	
 }

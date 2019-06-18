@@ -15,7 +15,7 @@ float dot3(float4 a, float4 b){
 
 
 
-#define SPLIT_VELOCITY 4.f
+#define SPLIT_VELOCITY 3.5f
 #define BOUNCE_OFFSET 0.01f
 
 #define EPSILON 0.001f
@@ -301,6 +301,11 @@ __kernel void Integrate(__global uint *gAlive,
 	{
 		gAlive[GID] = 0;
 	}
+	else if (gAlive[GID] != 1)
+	{
+		//gAlive[GID] = 1;
+		//gAlive[GID + nParticles] = 0;
+	}
 
 	if (v0.x * v0.x + v0.y * v0.y + v0.z * v0.z >= SPLIT_VELOCITY * SPLIT_VELOCITY)
 	{
@@ -329,7 +334,8 @@ __kernel void Clear(__global float4* gPosLife, __global float4* gVelMass) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 __kernel void Reorganize(	__global uint* gAlive, __global uint* gRank,	
 							__global float4* gPosLifeIn,  __global float4* gVelMassIn,
-							__global float4* gPosLifeOut, __global float4* gVelMassOut) {
+							__global float4* gPosLifeOut, __global float4* gVelMassOut,
+							uint nParticles) {
 
 
 	// Re-order the particles according to the gRank obtained from the parallel prefix sum
@@ -341,8 +347,58 @@ __kernel void Reorganize(	__global uint* gAlive, __global uint* gRank,
 
 	uint readAd = GID;
 	uint writeAd = GID;
+	
+		gAlive[GID] = gAlive[GID];
+		gPosLifeOut[GID] = gPosLifeIn[GID];
+		gVelMassOut[GID] = gVelMassIn[GID];
+		
 
-	int offset = GID - gRank[GID];
 
+
+		/*
+	
+	if (GID < (nParticles * 2) - 1 && gRank[GID] != gRank[GID + 1])
+	{
+		writeAd = gRank[GID];
+		if (gRank[GID] == GID)
+		{
+			gAlive[writeAd] = gAlive[GID];
+			gPosLifeOut[writeAd] = gPosLifeIn[GID];
+			gVelMassOut[writeAd] = gVelMassIn[GID];
+		}
+		else if (gRank[GID + 1] - gRank[GID] <= 1 && gRank[GID + 1] - gRank[GID] >= 0)
+		{
+			gAlive[writeAd] = gAlive[GID];
+			gPosLifeOut[writeAd] = gPosLifeIn[GID];
+			gVelMassOut[writeAd] = gVelMassIn[GID];
+		}
+		else
+		{
+			gAlive[GID] = 0;
+			gPosLifeOut[GID] = gPosLifeIn[GID];
+			gVelMassOut[GID] = gVelMassIn[GID];
+		}
+
+
+	}
+
+	*/
+
+
+	/*
+	if (GID < (nParticles * 2) - 1 && gRank[GID] != GID)
+	{
+		gAlive[GID] = 0;
+		gPosLifeOut[GID] = gPosLifeIn[GID];
+		gVelMassOut[GID] = gVelMassIn[GID];
+
+	}
+	else if (GID < (nParticles * 2) - 1 && gRank[GID] == GID)
+	{
+		gAlive[GID] = gAlive[GID];
+		gPosLifeOut[GID] = gPosLifeIn[GID];
+		gVelMassOut[GID] = gVelMassIn[GID];
+	}
+	*/
 
 }
