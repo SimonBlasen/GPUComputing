@@ -268,7 +268,7 @@ void CClothSimulationTask::ComputeGPU(cl_context , cl_command_queue CommandQueue
 	// Check for collisions
 	
 	// Constraint relaxation: use the ping-pong technique and perform the relaxation in several iterations
-	/*for (unsigned int i = 0; i < 2.0 * m_ClothResX; i++) {
+	for (unsigned int i = 0; i < 2.0 * m_ClothResX; i++) {
 	//
 	//	 Execute the constraint relaxation kernel
 	//
@@ -295,7 +295,7 @@ void CClothSimulationTask::ComputeGPU(cl_context , cl_command_queue CommandQueue
 
 	// You can check for collisions here again, to make sure there is no intersection with the cloth in the end
 
-	*/
+	
 
 	//compute correct normals
 	clErr = clEnqueueNDRangeKernel(CommandQueue, m_NormalKernel, 2, 0, globalWorkSize, LocalWorkSize, 0, 0, 0);
