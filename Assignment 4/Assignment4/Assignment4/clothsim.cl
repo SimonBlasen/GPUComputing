@@ -45,9 +45,6 @@
 
 
 
-	//elapsedTime *= 0.04f;
-
-
 
 
 	unsigned int particleID = get_global_id(0) + get_global_id(1) * width;
@@ -70,6 +67,8 @@
 		v1.x /= elapsedTime;
 		v1.y /= elapsedTime;
 		v1.z /= elapsedTime;
+
+		// If for initialization of prevPos-Array
 		if (v1.y < 100.f && v1.y > -100.f)
 		{
 			float4 a1 = windA + G_ACCEL;
@@ -137,157 +136,22 @@ __kernel void SatisfyConstraints(unsigned int width,
 	// Hint: you should use the SatisfyConstraint helper function in the following manner:
 	//SatisfyConstraint(pos, neighborpos, restDistance) * WEIGHT_XXX
 
-	/*
-	
-	
-
-
-	unsigned int partID = get_global_id(0) + get_global_id(1) * width;
-	// This is just to keep every 8th particle of the first row attached to the bar
-    if(partID > width-1 || ( partID & ( 7 )) != 0){
-
-	
-
-	
-		int2 GID;
-		GID.x = get_global_id(0);
-		GID.y = get_global_id(1);
-		
-		int2 LID;
-		LID.x = get_local_id(0);
-		LID.y = get_local_id(1);
-
-		int2 LSIZE;
-		LSIZE.x = get_local_size(0);
-		LSIZE.y = get_local_size(1);
-
-
-
-		float4 corVecSum = (float4)(0.f, 0.f, 0.f, 0.f);
-
-		//uint partID = GID.y * width + GID.x;
-		
-		if (GID.y >= 1)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 1) * width + GID.x], restDistance) * WEIGHT_ORTHO;
-		}
-		if (GID.y <= height - 2)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 1) * width + GID.x], restDistance) * WEIGHT_ORTHO;
-		}
-		if (GID.x >= 1)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y) * width + GID.x - 1], restDistance) * WEIGHT_ORTHO;
-		}
-		if (GID.x <= width - 2)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y) * width + GID.x + 1], restDistance) * WEIGHT_ORTHO;
-		}
-		
-		
-
-		
-
-		if (GID.y >= 1 && GID.x >= 1)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 1) * width + GID.x - 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
-		}
-		if (GID.y <= height - 2 && GID.x >= 1)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 1) * width + GID.x - 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
-		}
-		if (GID.x <= width - 2 && GID.y >= 1)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 1) * width + GID.x + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
-		}
-		if (GID.x <= width - 2 && GID.y <= height - 2)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 1) * width + GID.x + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
-		}
-
-		
-		if (GID.y >= 2)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 2) * width + GID.x], restDistance * 2) * WEIGHT_ORTHO_2;
-		}
-		if (GID.y <= height - 3)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 2) * width + GID.x], restDistance * 2) * WEIGHT_ORTHO_2;
-		}
-		if (GID.x >= 2)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y) * width + GID.x - 2], restDistance * 2) * WEIGHT_ORTHO_2;
-		}
-		if (GID.x <= width - 3)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y) * width + GID.x + 2], restDistance * 2) * WEIGHT_ORTHO_2;
-		}
-		
-
-		if (GID.y >= 2 && GID.x >= 2)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 2) * width + GID.x - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
-		}
-		if (GID.y <= height - 3 && GID.x >= 2)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 2) * width + GID.x - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
-		}
-		if (GID.x <= width - 3 && GID.y >= 2)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y - 2) * width + GID.x + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
-		}
-		if (GID.x <= width - 3 && GID.y <= height - 3)
-		{
-			corVecSum += SatisfyConstraint(d_posIn[partID], d_posIn[(GID.y + 2) * width + GID.x + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
-		}
-		
-
-		corVecSum.w = 0.f;
-
-
-
-
-
-
-
-
-		//if (corVecSum.x * corVecSum.x + corVecSum.y * corVecSum.y + corVecSum.z * corVecSum.z > 0.01f * ((restDistance * 0.5f) * (restDistance * 0.5f)))
-		if (length(corVecSum) > (restDistance / 2.f))
-		{
-			corVecSum = normalize(corVecSum) * (restDistance / 2.f);
-		}
-
-		d_posOut[partID] = d_posIn[partID] + corVecSum;
-
-
-	}
-	else
-	{
-		d_posOut[partID] = d_posIn[partID];
-	}
-
-	*/
-
-
-	
-
-
 	
 	
 	
 
 	
-		int2 GID;
-		GID.x = get_global_id(0);
-		GID.y = get_global_id(1);
-		
-		int2 LID;
-		LID.x = get_local_id(0);
-		LID.y = get_local_id(1);
+	int2 GID;
+	GID.x = get_global_id(0);
+	GID.y = get_global_id(1);
+	
+	int2 LID;
+	LID.x = get_local_id(0);
+	LID.y = get_local_id(1);
 
-		int2 LSIZE;
-		LSIZE.x = get_local_size(0);
-		LSIZE.y = get_local_size(1);
+	int2 LSIZE;
+	LSIZE.x = get_local_size(0);
+	LSIZE.y = get_local_size(1);
 
 
 	
@@ -737,14 +601,12 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 
 
-		//if (corVecSum.x * corVecSum.x + corVecSum.y * corVecSum.y + corVecSum.z * corVecSum.z > 0.01f * ((restDistance * 0.5f) * (restDistance * 0.5f)))
 		if (length(corVecSum) > (restDistance / 2.f))
 		{
 			corVecSum = normalize(corVecSum) * (restDistance / 2.f);
 		}
 
 		d_posOut[partID] = tile[LID.y + 2][LID.x + 2] + corVecSum;
-		//d_posOut[partID] = tile[LID.y + 2][LID.x + 2];
 
 
 	}

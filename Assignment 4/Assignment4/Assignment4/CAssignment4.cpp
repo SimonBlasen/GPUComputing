@@ -42,11 +42,11 @@ CAssignment4::CAssignment4()
 	// select task here...
 	// This time you have to do it during compile time
 	
-#if 0
+#if 1
 	cout<<"########################################"<<endl;
 	cout<<"TASK 1: Particle System"<<endl<<endl;
 
-	std::string meshPath = "Assets/cubeJump.obj";
+	std::string meshPath = "Assets/CubeMonkey.obj";
 	// Uncomment this to test your application with more triangles!
 	// meshPath = "Assets/cubeMonkey.obj";
 

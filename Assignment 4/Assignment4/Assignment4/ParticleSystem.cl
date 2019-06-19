@@ -16,7 +16,7 @@ float dot3(float4 a, float4 b){
 
 
 #define SPLIT_VELOCITY 0.5f
-#define BOUNCE_OFFSET 0.001f
+#define BOUNCE_OFFSET 0.02f
 #define PARTICLE_START_LIFETIME 500.0f
 
 #define EPSILON 0.001f
@@ -112,12 +112,68 @@ bool CheckCollisions(	float4 x0, float4 x1,
 	
 	bool didIntersec = false;
 	float minT = 2.f;
+	float4 minN;
 	float tIsec;
 	float4 nIsec;
 
 	int iter = 0;
 	//int leftVerts = nTriangles * 3;
 	int leftVerts = (nTriangles * 3) - (iter * LSIZE);
+
+	/*
+	int tri = 0;
+		while (tri < leftVerts)
+		{
+			//if (LineTriangleIntersection(x0, x1, lTriangleCache[tri], lTriangleCache[tri + 1], lTriangleCache[tri + 2], &tIsec, &nIsec))
+			if (LineTriangleIntersection(x0, x1, gTriangleSoup[tri + LSIZE * iter], gTriangleSoup[tri + LSIZE * iter + 1], gTriangleSoup[tri + LSIZE * iter + 2], &tIsec, &nIsec))
+			{
+				if (tIsec < minT)
+				{
+					didIntersec = true;
+					minT = tIsec;
+					minN = nIsec;
+					//nIsec = nIsec;
+				}
+			}
+
+			tri += 3;
+
+		}*/
+
+
+
+
+
+	int doneTrias = 0;
+	while (doneTrias < nTriangles)
+	{
+		if (LID + doneTrias * 3 < nTriangles * 3)
+		{
+			lTriangleCache[LID] = gTriangleSoup[LID + doneTrias * 3];
+		}
+		
+		barrier(CLK_LOCAL_MEM_FENCE);
+
+		int arr = 0;
+		while (arr * 3 < LSIZE)
+		{
+			if (arr + doneTrias < nTriangles && LineTriangleIntersection(x0, x1, lTriangleCache[arr * 3], lTriangleCache[arr * 3 + 1], lTriangleCache[arr * 3 + 2], &tIsec, &nIsec))
+			{
+				if (tIsec < minT)
+				{
+					didIntersec = true;
+					minT = tIsec;
+					minN = nIsec;
+					//nIsec = nIsec;
+				}
+			}
+			arr++;
+		}
+
+		doneTrias += arr;
+	}
+
+	/*
 	while (leftVerts > 0)
 	{
 		if (LID + LSIZE * iter < nTriangles * 3)
@@ -131,11 +187,13 @@ bool CheckCollisions(	float4 x0, float4 x1,
 		while (tri < min(LSIZE, leftVerts))
 		{
 			if (LineTriangleIntersection(x0, x1, lTriangleCache[tri], lTriangleCache[tri + 1], lTriangleCache[tri + 2], &tIsec, &nIsec))
+			//if (LineTriangleIntersection(x0, x1, gTriangleSoup[tri + LSIZE * iter], gTriangleSoup[tri + LSIZE * iter + 1], gTriangleSoup[tri + LSIZE * iter + 2], &tIsec, &nIsec))
 			{
 				if (tIsec < minT)
 				{
 					didIntersec = true;
 					minT = tIsec;
+					minN = nIsec;
 					//nIsec = nIsec;
 				}
 			}
@@ -143,15 +201,16 @@ bool CheckCollisions(	float4 x0, float4 x1,
 			tri += 3;
 
 		}
-
+		
+		barrier(CLK_LOCAL_MEM_FENCE);
 		
 		iter++;
-		leftVerts = (nTriangles * 3) - (iter * LSIZE);
-		//leftVerts -= LSIZE;
+		//leftVerts = (nTriangles * 3) - (iter * LSIZE);
+		leftVerts -= LSIZE;
 	}
-
-	*t = tIsec;
-	*n = nIsec;
+	*/
+	*t = minT;
+	*n = minN;
 
 	return didIntersec;
 
@@ -296,7 +355,7 @@ __kernel void Integrate(__global uint *gAlive,
 	// For instance, if the particle gets too fast (or too high, or passes through some region), it is split into two...
 
 	
-	x1.w = life - dT * 100.0f * (GID / 200000.0f);
+	x1.w = life - dT;// * 100.0f * (GID / 200000.0f);
 
 	if (x1.w <= 0.f)
 	{
@@ -315,7 +374,7 @@ __kernel void Integrate(__global uint *gAlive,
 		//v0.z *= 0.5f;
 
 		float4 newX1 = x1;
-		newX1.w = PARTICLE_START_LIFETIME * 100.0f;
+		newX1.w = PARTICLE_START_LIFETIME;
 
 		gAlive[GID + nParticles] = 1;
 		gPosLife[get_global_id(0) + nParticles] = newX1;
@@ -352,8 +411,6 @@ __kernel void Reorganize(	__global uint* gAlive, __global uint* gRank,
 	int LID = get_local_id(0);
 	int LSIZE = get_local_size(0);
 
-	//uint readAd = GID;
-	//uint writeAd = GID;
 
 
 	if (GID == 0 || ((gRank[GID] - gRank[GID - 1]) == 1))
@@ -372,66 +429,4 @@ __kernel void Reorganize(	__global uint* gAlive, __global uint* gRank,
 			}
 		}
 	}
-	else if (GID != 0 && GID * 2 < nParticles && ((gRank[GID] - gRank[GID - 1]) > 10))
-	{
-		//gAlive[100000000000] = 3;
-	}
-
-
-
-
-	/*
-		gAlive[GID] = gAlive[GID];
-		gPosLifeOut[GID] = gPosLifeIn[GID];
-		gVelMassOut[GID] = gVelMassIn[GID];
-		*/
-
-
-
-		/*
-	
-	if (GID < (nParticles * 2) - 1 && gRank[GID] != gRank[GID + 1])
-	{
-		writeAd = gRank[GID];
-		if (gRank[GID] == GID)
-		{
-			gAlive[writeAd] = gAlive[GID];
-			gPosLifeOut[writeAd] = gPosLifeIn[GID];
-			gVelMassOut[writeAd] = gVelMassIn[GID];
-		}
-		else if (gRank[GID + 1] - gRank[GID] <= 1 && gRank[GID + 1] - gRank[GID] >= 0)
-		{
-			gAlive[writeAd] = gAlive[GID];
-			gPosLifeOut[writeAd] = gPosLifeIn[GID];
-			gVelMassOut[writeAd] = gVelMassIn[GID];
-		}
-		else
-		{
-			gAlive[GID] = 0;
-			gPosLifeOut[GID] = gPosLifeIn[GID];
-			gVelMassOut[GID] = gVelMassIn[GID];
-		}
-
-
-	}
-
-	*/
-
-
-	/*
-	if (GID < (nParticles * 2) - 1 && gRank[GID] != GID)
-	{
-		gAlive[GID] = 0;
-		gPosLifeOut[GID] = gPosLifeIn[GID];
-		gVelMassOut[GID] = gVelMassIn[GID];
-
-	}
-	else if (GID < (nParticles * 2) - 1 && gRank[GID] == GID)
-	{
-		gAlive[GID] = gAlive[GID];
-		gPosLifeOut[GID] = gPosLifeIn[GID];
-		gVelMassOut[GID] = gVelMassIn[GID];
-	}
-	*/
-
 }
