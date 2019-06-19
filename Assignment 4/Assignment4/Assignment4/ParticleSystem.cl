@@ -15,7 +15,7 @@ float dot3(float4 a, float4 b){
 
 
 
-#define SPLIT_VELOCITY 0.5f
+#define SPLIT_VELOCITY 3.5f
 #define BOUNCE_OFFSET 0.02f
 #define PARTICLE_START_LIFETIME 500.0f
 
@@ -116,32 +116,6 @@ bool CheckCollisions(	float4 x0, float4 x1,
 	float tIsec;
 	float4 nIsec;
 
-	int iter = 0;
-	//int leftVerts = nTriangles * 3;
-	int leftVerts = (nTriangles * 3) - (iter * LSIZE);
-
-	/*
-	int tri = 0;
-		while (tri < leftVerts)
-		{
-			//if (LineTriangleIntersection(x0, x1, lTriangleCache[tri], lTriangleCache[tri + 1], lTriangleCache[tri + 2], &tIsec, &nIsec))
-			if (LineTriangleIntersection(x0, x1, gTriangleSoup[tri + LSIZE * iter], gTriangleSoup[tri + LSIZE * iter + 1], gTriangleSoup[tri + LSIZE * iter + 2], &tIsec, &nIsec))
-			{
-				if (tIsec < minT)
-				{
-					didIntersec = true;
-					minT = tIsec;
-					minN = nIsec;
-					//nIsec = nIsec;
-				}
-			}
-
-			tri += 3;
-
-		}*/
-
-
-
 
 
 	int doneTrias = 0;
@@ -169,46 +143,12 @@ bool CheckCollisions(	float4 x0, float4 x1,
 			}
 			arr++;
 		}
+		
+		barrier(CLK_LOCAL_MEM_FENCE);
 
 		doneTrias += arr;
 	}
 
-	/*
-	while (leftVerts > 0)
-	{
-		if (LID + LSIZE * iter < nTriangles * 3)
-		{
-			lTriangleCache[LID] = gTriangleSoup[LID + LSIZE * iter];
-		}
-		
-		barrier(CLK_LOCAL_MEM_FENCE);
-		
-		int tri = 0;
-		while (tri < min(LSIZE, leftVerts))
-		{
-			if (LineTriangleIntersection(x0, x1, lTriangleCache[tri], lTriangleCache[tri + 1], lTriangleCache[tri + 2], &tIsec, &nIsec))
-			//if (LineTriangleIntersection(x0, x1, gTriangleSoup[tri + LSIZE * iter], gTriangleSoup[tri + LSIZE * iter + 1], gTriangleSoup[tri + LSIZE * iter + 2], &tIsec, &nIsec))
-			{
-				if (tIsec < minT)
-				{
-					didIntersec = true;
-					minT = tIsec;
-					minN = nIsec;
-					//nIsec = nIsec;
-				}
-			}
-
-			tri += 3;
-
-		}
-		
-		barrier(CLK_LOCAL_MEM_FENCE);
-		
-		iter++;
-		//leftVerts = (nTriangles * 3) - (iter * LSIZE);
-		leftVerts -= LSIZE;
-	}
-	*/
 	*t = minT;
 	*n = minN;
 
@@ -298,8 +238,6 @@ __kernel void Integrate(__global uint *gAlive,
 	v0.z = v0.z + 0.5f * (a0.z + a1.z) * dT;
 	
 
-
-	//x0.y = 0.2f * sin(x0.w * 5.f) + 0.3f;
 	
 	
 	
@@ -312,10 +250,6 @@ __kernel void Integrate(__global uint *gAlive,
 
 	if (CheckCollisions(x0, x1, gTriangleSoup, lTriangleCache, nTriangles, &t, &n, LSIZE, LID))
 	{
-		//v0.x = -v0.x;
-		//v0.y = -v0.y;
-		//v0.z = -v0.z;
-
 		float4 ray = x1 - x0;
 		ray.w = 0.f;
 		ray = normalize(ray);
@@ -355,7 +289,7 @@ __kernel void Integrate(__global uint *gAlive,
 	// For instance, if the particle gets too fast (or too high, or passes through some region), it is split into two...
 
 	
-	x1.w = life - dT;// * 100.0f * (GID / 200000.0f);
+	x1.w = life - dT;
 
 	if (x1.w <= 0.f)
 	{
@@ -369,9 +303,9 @@ __kernel void Integrate(__global uint *gAlive,
 
 	if (v0.x * v0.x + v0.y * v0.y + v0.z * v0.z >= SPLIT_VELOCITY * SPLIT_VELOCITY)
 	{
-		//v0.x *= 0.5f;
-		//v0.y *= 0.5f;
-		//v0.z *= 0.5f;
+		v0.x *= 0.5f;
+		v0.y *= 0.5f;
+		v0.z *= 0.5f;
 
 		float4 newX1 = x1;
 		newX1.w = PARTICLE_START_LIFETIME;
