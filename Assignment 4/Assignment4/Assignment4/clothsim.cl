@@ -307,10 +307,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y - 2 >= 0 
-			&&	GID.y - 2 < height
-			&& GID.x >= 0
-			&& GID.x < width)
 			tile[0][LID.x + 2] = d_posIn[(GID.y - 2) * width + GID.x];
 		}
 	}
@@ -322,10 +318,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y - 2 >= 0 
-			&&	GID.y - 2 < height
-			&& GID.x >= 0
-			&& GID.x < width)
 			tile[1][LID.x + 2] = d_posIn[(GID.y - 2) * width + GID.x];
 		}
 	}
@@ -345,10 +337,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 2 >= 0 
-			&&	GID.y + 2 < height
-			&& GID.x >= 0
-			&& GID.x < width)
 			tile[TILE_Y + 3][LID.x + 2] = d_posIn[(GID.y + 2) * width + GID.x];
 		}
 	}
@@ -360,10 +348,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 2 >= 0 
-			&&	GID.y + 2 < height
-			&& GID.x >= 0
-			&& GID.x < width)
 			tile[TILE_Y + 2][LID.x + 2] = d_posIn[(GID.y + 2) * width + GID.x];
 		}
 	}
@@ -392,10 +376,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 0 >= 0 
-			&&	GID.y + 0 < height
-			&& GID.x - 2 >= 0
-			&& GID.x - 2 < width)
 			tile[LID.y + 2][0] = d_posIn[(GID.y) * width + GID.x - 2];
 		}
 	}
@@ -407,10 +387,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 0 >= 0 
-			&&	GID.y + 0 < height
-			&& GID.x - 2 >= 0
-			&& GID.x - 2 < width)
 			tile[LID.y + 2][1] = d_posIn[(GID.y) * width + GID.x - 2];
 		}
 	}
@@ -430,10 +406,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 0 >= 0 
-			&&	GID.y + 0 < height
-			&& GID.x + 2 >= 0
-			&& GID.x + 2 < width)
 			tile[LID.y + 2][TILE_X + 3] = d_posIn[(GID.y) * width + GID.x + 2];
 		}
 	}
@@ -445,10 +417,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 0 >= 0 
-			&&	GID.y + 0 < height
-			&& GID.x + 2 >= 0
-			&& GID.x + 2 < width)
 			tile[LID.y + 2][TILE_X + 2] = d_posIn[(GID.y) * width + GID.x + 2];
 		}
 	}
@@ -462,7 +430,7 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 
 
-	
+
 
 
 
@@ -479,10 +447,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y - 4 >= 0 
-			&&	GID.y - 4 < height
-			&& GID.x - 4 >= 0
-			&& GID.x - 4 < width)
 			tile[0][0] = d_posIn[(GID.y - 4) * width + GID.x - 4];
 		}
 	}
@@ -494,10 +458,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y - 4 >= 0 
-			&&	GID.y - 4 < height
-			&& GID.x - 4 >= 0
-			&& GID.x - 4 < width)
 			tile[0][1] = d_posIn[(GID.y - 4) * width + GID.x - 4];
 		}
 	}
@@ -509,10 +469,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y - 4 >= 0 
-			&&	GID.y - 4 < height
-			&& GID.x - 4 >= 0
-			&& GID.x - 4 < width)
 			tile[1][0] = d_posIn[(GID.y - 4) * width + GID.x - 4];
 		}
 	}
@@ -524,10 +480,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y - 4 >= 0 
-			&&	GID.y - 4 < height
-			&& GID.x - 4 >= 0
-			&& GID.x - 4 < width)
 			tile[1][1] = d_posIn[(GID.y - 4) * width + GID.x - 4];
 		}
 	}
@@ -543,10 +495,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y - 4 >= 0 
-			&&	GID.y - 4 < height
-			&& GID.x + 4 >= 0
-			&& GID.x + 4 < width)
 			tile[0][TILE_X + 3] = d_posIn[(GID.y - 4) * width + GID.x + 4];
 		}
 	}
@@ -558,10 +506,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y - 4 >= 0 
-			&&	GID.y - 4 < height
-			&& GID.x + 4 >= 0
-			&& GID.x + 4 < width)
 			tile[0][TILE_X + 2] = d_posIn[(GID.y - 4) * width + GID.x + 4];
 		}
 	}
@@ -573,10 +517,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y - 4 >= 0 
-			&&	GID.y - 4 < height
-			&& GID.x + 4 >= 0
-			&& GID.x + 4 < width)
 			tile[1][TILE_X + 3] = d_posIn[(GID.y - 4) * width + GID.x + 4];
 		}
 	}
@@ -588,10 +528,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y - 4 >= 0 
-			&&	GID.y - 4 < height
-			&& GID.x + 4 >= 0
-			&& GID.x + 4 < width)
 			tile[1][TILE_X + 2] = d_posIn[(GID.y - 4) * width + GID.x + 4];
 		}
 	}
@@ -607,10 +543,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 4 >= 0 
-			&&	GID.y + 4 < height
-			&& GID.x - 4 >= 0
-			&& GID.x - 4 < width)
 			tile[TILE_Y + 3][0] = d_posIn[(GID.y + 4) * width + GID.x - 4];
 		}
 	}
@@ -622,10 +554,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 4 >= 0 
-			&&	GID.y + 4 < height
-			&& GID.x - 4 >= 0
-			&& GID.x - 4 < width)
 			tile[TILE_Y + 3][1] = d_posIn[(GID.y + 4) * width + GID.x - 4];
 		}
 	}
@@ -637,10 +565,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 4 >= 0 
-			&&	GID.y + 4 < height
-			&& GID.x - 4 >= 0
-			&& GID.x - 4 < width)
 			tile[TILE_Y + 2][0] = d_posIn[(GID.y + 4) * width + GID.x - 4];
 		}
 	}
@@ -652,10 +576,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 4 >= 0 
-			&&	GID.y + 4 < height
-			&& GID.x - 4 >= 0
-			&& GID.x - 4 < width)
 			tile[TILE_Y + 2][1] = d_posIn[(GID.y + 4) * width + GID.x - 4];
 		}
 	}
@@ -671,10 +591,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 4 >= 0 
-			&&	GID.y + 4 < height
-			&& GID.x + 4 >= 0
-			&& GID.x + 4 < width)
 			tile[TILE_Y + 3][TILE_X + 3] = d_posIn[(GID.y + 4) * width + GID.x + 4];
 		}
 	}
@@ -686,10 +602,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 4 >= 0 
-			&&	GID.y + 4 < height
-			&& GID.x + 4 >= 0
-			&& GID.x + 4 < width)
 			tile[TILE_Y + 3][TILE_X + 2] = d_posIn[(GID.y + 4) * width + GID.x + 4];
 		}
 	}
@@ -701,10 +613,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 4 >= 0 
-			&&	GID.y + 4 < height
-			&& GID.x + 4 >= 0
-			&& GID.x + 4 < width)
 			tile[TILE_Y + 2][TILE_X + 3] = d_posIn[(GID.y + 4) * width + GID.x + 4];
 		}
 	}
@@ -716,15 +624,11 @@ __kernel void SatisfyConstraints(unsigned int width,
 		}
 		else
 		{
-			if (GID.y + 4 >= 0 
-			&&	GID.y + 4 < height
-			&& GID.x + 4 >= 0
-			&& GID.x + 4 < width)
 			tile[TILE_Y + 2][TILE_X + 2] = d_posIn[(GID.y + 4) * width + GID.x + 4];
 		}
 	}
 
-	
+
 
 
 	tile[LID.y + 2][LID.x + 2] = d_posIn[(GID.y) * width + GID.x];
