@@ -49,6 +49,7 @@ set(sources
   Scan.cl
   CClothSimulationTask.cpp
   CParticleSystemTask.cpp
+  CRainSimulation.cpp
   CAssignment4.cpp
   CTriMesh.cpp
   CGLTexture.cpp
@@ -61,6 +62,7 @@ set(sources
   particles.frag
   CClothSimulationTask.h
   CParticleSystemTask.h
+  CRainSimulation.h
   CAssignment4.h
   CTriMesh.h
   CGLTexture.h

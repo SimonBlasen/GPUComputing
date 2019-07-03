@@ -7,6 +7,7 @@ GPU Computing / GPGPU Praktikum source code.
 
 #include "CClothSimulationTask.h"
 #include "CParticleSystemTask.h"
+#include "CRainSimulation.h"
 
 #include <iostream>
 #include <string>
@@ -41,8 +42,23 @@ CAssignment4::CAssignment4()
 {
 	// select task here...
 	// This time you have to do it during compile time
-	
-#if 1
+
+
+
+	cout << "########################################" << endl;
+	cout << "TASK 2: Rain Simulation" << endl << endl;
+
+	m_LocalWorkSize[0] = 16;
+	m_LocalWorkSize[1] = 16;
+	m_LocalWorkSize[2] = 1;
+	m_pCurrentTask = new CRainSimulation(64, 64);
+
+
+
+
+
+	/*
+#if 0
 	cout<<"########################################"<<endl;
 	cout<<"TASK 1: Particle System"<<endl<<endl;
 
@@ -62,7 +78,7 @@ CAssignment4::CAssignment4()
 	m_LocalWorkSize[1] = 16;
 	m_LocalWorkSize[2] = 1;
 	m_pCurrentTask = new CClothSimulationTask(64, 64);
-#endif
+#endif*/
 
 }
 
