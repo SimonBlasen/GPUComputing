@@ -305,6 +305,11 @@ void CAssignment4::Render()
 	glfwSwapBuffers(m_Window);
 }
 
+void CAssignment4::InitTerrain()
+{
+
+}
+
 void CAssignment4::OnIdle()
 {
 	if(m_PrevTime < 0)

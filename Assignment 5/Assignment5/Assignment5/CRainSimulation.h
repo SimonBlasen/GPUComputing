@@ -64,11 +64,12 @@ protected:
 	unsigned int			m_TerrainResX = 0;
 	unsigned int			m_TerrainResY = 0;
 	unsigned int			m_FrameCounter = 0;
+	unsigned long			m_TerrainSeed = 0;
 
 	CTriMesh*				m_pTerrainModel = nullptr;
-	CTriMesh*				m_pClothModel = nullptr;
+	//CTriMesh*				m_pClothModel = nullptr;
 	CTriMesh*				m_pEnvironment = nullptr;
-	CGLTexture*				m_pClothTexture = nullptr;
+	//CGLTexture*				m_pClothTexture = nullptr;
 	CGLTexture*				m_pTerrainTexture = nullptr;
 	GLUquadricObj*			m_pSphere = nullptr;
 	float					m_SphereRadius = 0.2f;
@@ -91,11 +92,13 @@ protected:
 	cl_mem					m_clPosArrayAux = nullptr;
 	cl_mem					m_clNormalArray = nullptr;
 
-	cl_program				m_ClothSimProgram = nullptr;
+	cl_program				m_TerrainSimProgram = nullptr;
 	cl_kernel				m_NormalKernel = nullptr;
 	cl_kernel				m_IntegrateKernel = nullptr;
 	cl_kernel				m_ConstraintKernel = nullptr;
 	cl_kernel				m_CollisionsKernel = nullptr;
+
+	cl_kernel				m_InitTerrainKernel = nullptr;
 
 	float					m_ElapsedTime = 0.0f;
 	float					m_PrevElapsedTime = 0.0f;
@@ -103,6 +106,8 @@ protected:
 
 	bool					m_KeyboardMask[255];
 	bool					m_InspectCloth = false;
+
+	bool					m_firstRun = true;
 
 	// mouse
 	int						m_Buttons = 0;

@@ -168,47 +168,62 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	V_RETURN_FALSE_CL(clError, "Error allocating device arrays.");
 
 	string programCode;
-	CLUtil::LoadProgramSourceToMemory("clothsim.cl", programCode);
-	m_ClothSimProgram = CLUtil::BuildCLProgramFromMemory(Device, Context, programCode);
-	if(m_ClothSimProgram == nullptr)
+	CLUtil::LoadProgramSourceToMemory("TerrainSim.cl", programCode);
+	m_TerrainSimProgram = CLUtil::BuildCLProgramFromMemory(Device, Context, programCode);
+	if(m_TerrainSimProgram == nullptr)
 		return false;
 
 
-	m_IntegrateKernel = clCreateKernel(m_ClothSimProgram, "Integrate", &clError);
+	m_InitTerrainKernel = clCreateKernel(m_TerrainSimProgram, "InitHeightfield", &clError);
+	V_RETURN_FALSE_CL(clError, "Failed to create Init Heightfield kernel.");
+
+
+	m_IntegrateKernel = clCreateKernel(m_TerrainSimProgram, "Integrate", &clError);
 	V_RETURN_FALSE_CL(clError, "Failed to create Integrate kernel.");
-	m_NormalKernel = clCreateKernel(m_ClothSimProgram, "ComputeNormals", &clError);
+	m_NormalKernel = clCreateKernel(m_TerrainSimProgram, "ComputeNormals", &clError);
 	V_RETURN_FALSE_CL(clError, "Failed to create Normal kernel.");
-	m_ConstraintKernel = clCreateKernel(m_ClothSimProgram, "SatisfyConstraints", &clError);
+	m_ConstraintKernel = clCreateKernel(m_TerrainSimProgram, "SatisfyConstraints", &clError);
 	V_RETURN_FALSE_CL(clError, "Failed to create Constraint kernel.");
-	m_CollisionsKernel = clCreateKernel(m_ClothSimProgram, "CheckCollisions", &clError);
+	m_CollisionsKernel = clCreateKernel(m_TerrainSimProgram, "CheckCollisions", &clError);
 	V_RETURN_FALSE_CL(clError, "Failed to create Collision kernel.");
 
 	// Compute the rest distance between two particles.
 	// We scale the distance by 0.9 to get a nicer look for the cloth (more folds).
-	float restDistance = 1.f / ((float)m_ClothResX)*0.9f;
+	float restDistance = 1.f / ((float)m_TerrainResX)*0.9f;
+
+
+
+	clError = clSetKernelArg(m_InitTerrainKernel, 0, sizeof(unsigned int), &m_TerrainResX);
+	clError |= clSetKernelArg(m_InitTerrainKernel, 1, sizeof(unsigned int), &m_TerrainResY);
+	clError |= clSetKernelArg(m_InitTerrainKernel, 2, sizeof(cl_mem), (void*)&m_TerrainSeed);
+	clError |= clSetKernelArg(m_InitTerrainKernel, 3, sizeof(cl_mem), (void*)&m_clPosArray);
+	V_RETURN_FALSE_CL(clError, "Failed to set init terrain kernel params");
+
+
+
 
 	////////////////////////////////////////////////////////////////////////
 	// Specify the arguments for each kernel
-	clError  = clSetKernelArg(m_IntegrateKernel, 0, sizeof(unsigned int), &m_ClothResX);
-	clError |= clSetKernelArg(m_IntegrateKernel, 1, sizeof(unsigned int), &m_ClothResY);
+	clError  = clSetKernelArg(m_IntegrateKernel, 0, sizeof(unsigned int), &m_TerrainResX);
+	clError |= clSetKernelArg(m_IntegrateKernel, 1, sizeof(unsigned int), &m_TerrainResY);
 	clError |= clSetKernelArg(m_IntegrateKernel, 2, sizeof(cl_mem), (void*) &m_clPosArray);
 	clError |= clSetKernelArg(m_IntegrateKernel, 3, sizeof(cl_mem), (void*) &m_clPosArrayOld);
 	V_RETURN_FALSE_CL(clError, "Failed to set integration kernel params");
 
-	clError  = clSetKernelArg(m_ConstraintKernel, 0, sizeof(unsigned int), &m_ClothResX);
-	clError |= clSetKernelArg(m_ConstraintKernel, 1, sizeof(unsigned int), &m_ClothResY);
+	clError  = clSetKernelArg(m_ConstraintKernel, 0, sizeof(unsigned int), &m_TerrainResX);
+	clError |= clSetKernelArg(m_ConstraintKernel, 1, sizeof(unsigned int), &m_TerrainResY);
 	clError |= clSetKernelArg(m_ConstraintKernel, 2, sizeof(float), &restDistance);
 	// The rest of parameters is set before kernel launch (ping-ponging)
 	V_RETURN_FALSE_CL(clError, "Failed to set constraint kernel params");
 
-	clError  = clSetKernelArg(m_NormalKernel, 0, sizeof(unsigned int), &m_ClothResX);
-    clError |= clSetKernelArg(m_NormalKernel, 1, sizeof(unsigned int), &m_ClothResY);
+	clError  = clSetKernelArg(m_NormalKernel, 0, sizeof(unsigned int), &m_TerrainResX);
+    clError |= clSetKernelArg(m_NormalKernel, 1, sizeof(unsigned int), &m_TerrainResY);
 	clError |= clSetKernelArg(m_NormalKernel, 2, sizeof(cl_mem), (void*) &m_clPosArray);
     clError |= clSetKernelArg(m_NormalKernel, 3, sizeof(cl_mem), (void*) &m_clNormalArray);
 	V_RETURN_FALSE_CL(clError, "Failed to set normal computation kernel params");
 
-	clError  = clSetKernelArg(m_CollisionsKernel, 0, sizeof(unsigned int), &m_ClothResX);
-    clError |= clSetKernelArg(m_CollisionsKernel, 1, sizeof(unsigned int), &m_ClothResY);
+	clError  = clSetKernelArg(m_CollisionsKernel, 0, sizeof(unsigned int), &m_TerrainResX);
+    clError |= clSetKernelArg(m_CollisionsKernel, 1, sizeof(unsigned int), &m_TerrainResY);
 	clError |= clSetKernelArg(m_CollisionsKernel, 2, sizeof(cl_mem), (void*) &m_clPosArray);
 	// Dynamic sphere parameters are updated before kernel launch
 	V_RETURN_FALSE_CL(clError, "Failed to set collision kernel params");
@@ -218,10 +233,15 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 
 void CRainSimulation::ReleaseResources()
 {
-	if(m_pClothModel)
+	/*if(m_pClothModel)
 	{
 		delete m_pClothModel;
 		m_pClothModel = NULL;
+	}*/
+	if (m_pTerrainModel)
+	{
+		delete m_pTerrainModel;
+		m_pTerrainModel = NULL;
 	}
 
 	if(m_pEnvironment)
@@ -245,8 +265,9 @@ void CRainSimulation::ReleaseResources()
 	SAFE_RELEASE_KERNEL(m_NormalKernel);
 	SAFE_RELEASE_KERNEL(m_ConstraintKernel);
 	SAFE_RELEASE_KERNEL(m_CollisionsKernel);
+	SAFE_RELEASE_KERNEL(m_InitTerrainKernel);
 
-	SAFE_RELEASE_PROGRAM(m_ClothSimProgram);
+	SAFE_RELEASE_PROGRAM(m_TerrainSimProgram);
 	
 	SAFE_RELEASE_GL_SHADER(m_PSCloth);
 	SAFE_RELEASE_GL_SHADER(m_VSCloth);
@@ -263,10 +284,34 @@ void CRainSimulation::ComputeGPU(cl_context , cl_command_queue CommandQueue, siz
 
 	//get global work size
 	size_t globalWorkSize[2];
-	globalWorkSize[0] = CLUtil::GetGlobalWorkSize(m_ClothResX, LocalWorkSize[0]);
-	globalWorkSize[1] = CLUtil::GetGlobalWorkSize(m_ClothResY, LocalWorkSize[1]);
+	globalWorkSize[0] = CLUtil::GetGlobalWorkSize(m_TerrainResX, LocalWorkSize[0]);
+	globalWorkSize[1] = CLUtil::GetGlobalWorkSize(m_TerrainResY, LocalWorkSize[1]);
 
 	glFinish();
+
+
+
+
+
+	V_RETURN_CL(clEnqueueAcquireGLObjects(CommandQueue, 1, &m_clPosArray, 0, NULL, NULL), "Error acquiring OpenGL vertex buffer.");
+	V_RETURN_CL(clEnqueueAcquireGLObjects(CommandQueue, 1, &m_clNormalArray, 0, NULL, NULL), "Error acquiring OpenGL normal buffer.");
+
+
+	if (m_firstRun)
+	{
+		m_firstRun = false;
+
+		clErr = clEnqueueNDRangeKernel(CommandQueue, m_InitTerrainKernel, 2, 0, globalWorkSize, LocalWorkSize, 0, 0, 0);
+		V_RETURN_CL(clErr, "Error executing m_InitTerrainKernel");
+
+		cout << "Inited Terrain" << endl;
+	}
+
+
+
+
+
+	/*
 	V_RETURN_CL(clEnqueueAcquireGLObjects(CommandQueue, 1, &m_clPosArray, 0, NULL, NULL),  "Error acquiring OpenGL vertex buffer.");
 	V_RETURN_CL(clEnqueueAcquireGLObjects(CommandQueue, 1, &m_clNormalArray, 0, NULL, NULL), "Error acquiring OpenGL normal buffer.");
 	
@@ -325,14 +370,18 @@ void CRainSimulation::ComputeGPU(cl_context , cl_command_queue CommandQueue, siz
 	// You can check for collisions here again, to make sure there is no intersection with the cloth in the end
 
 	
+	*/
+
+
 
 	//compute correct normals
 	clErr = clEnqueueNDRangeKernel(CommandQueue, m_NormalKernel, 2, 0, globalWorkSize, LocalWorkSize, 0, 0, 0);
 	V_RETURN_CL(clErr, "Error executing normal computation kernel");
 
 
-	V_RETURN_CL(clEnqueueReleaseGLObjects(CommandQueue, 1, &m_clPosArray, 0, NULL, NULL),  "Error releasing OpenGL vertex buffer.");
+	V_RETURN_CL(clEnqueueReleaseGLObjects(CommandQueue, 1, &m_clPosArray, 0, NULL, NULL), "Error releasing OpenGL vertex buffer.");
 	V_RETURN_CL(clEnqueueReleaseGLObjects(CommandQueue, 1, &m_clNormalArray, 0, NULL, NULL), "Error releasing OpenGL normal buffer.");
+
 
 	clFinish(CommandQueue);
 	m_FrameCounter++;
@@ -353,7 +402,8 @@ void CRainSimulation::Render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glActiveTexture(GL_TEXTURE0);
-	m_pClothTexture->bind();
+	//m_pClothTexture->bind();
+	m_pTerrainTexture->bind();
 	
 	//render wireframe cloth
 	if(m_InspectCloth)
@@ -362,8 +412,8 @@ void CRainSimulation::Render()
 		glPolygonMode(GL_BACK, GL_LINE);
 		glUseProgramObjectARB(m_ProgRenderMesh);
 		glColor3f(1.0f, 1.0f, 1.0f);
-		if(m_pClothModel)
-			m_pClothModel->DrawGL(GL_TRIANGLES);
+		if(m_pTerrainModel)
+			m_pTerrainModel->DrawGL(GL_TRIANGLES);
 
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPolygonMode(GL_BACK, GL_FILL);
@@ -375,8 +425,8 @@ void CRainSimulation::Render()
 	glPolygonMode(GL_FRONT, GL_FILL);
 	glPolygonMode(GL_BACK, GL_FILL);
 	glUseProgramObjectARB(m_ProgRenderCloth);
-	if(m_pClothModel)
-		m_pClothModel->DrawGL(GL_TRIANGLES);
+	if(m_pTerrainModel)
+		m_pTerrainModel->DrawGL(GL_TRIANGLES);
 
 	if(m_InspectCloth)
 	{

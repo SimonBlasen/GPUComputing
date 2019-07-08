@@ -238,7 +238,7 @@ CTriMesh* CTriMesh::CreatePlane(unsigned int nVertsX, unsigned int nVertsY)
 		for(unsigned int x = 0; x < nVertsX; x++)
 		{
 			Vertex vert;
-			vert.Pos = float3(deltaX * x - 0.5f, 0.6f, -deltaY * y);
+			vert.Pos = float3(deltaX * x - 0.5f, -0.3f, deltaY * y - 0.5f);
 			vert.Norm = float3(0, 0, 1.0f);
 			vert.Tex = float2(deltaX * x, deltaY * y);
 			pNewMesh->m_Vertices.push_back(vert);

@@ -47,6 +47,7 @@ set(sources
   clothsim.cl
   ParticleSystem.cl
   Scan.cl
+  TerrainSim.cl
   CClothSimulationTask.cpp
   CParticleSystemTask.cpp
   CRainSimulation.cpp

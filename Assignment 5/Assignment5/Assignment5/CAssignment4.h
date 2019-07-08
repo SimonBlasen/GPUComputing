@@ -62,6 +62,8 @@ protected:
 
 	virtual void Render();
 
+	virtual void InitTerrain();
+
 	virtual void OnKeyboard(GLFWwindow* pWindow, int Key, int ScanCode, int Action, int Mods);
 
 	virtual void OnMouse(GLFWwindow* pWindow, int Button, int State, int Mods);
