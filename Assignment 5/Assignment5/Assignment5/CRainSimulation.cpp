@@ -26,9 +26,9 @@ using namespace std;
 // CClothSimulationTask
 
 CRainSimulation::
-CRainSimulation(unsigned int ClothResX, unsigned int ClothResY)
-	: m_ClothResX(ClothResX)
-	, m_ClothResY(ClothResY)
+CRainSimulation(unsigned int TerrainResX, unsigned int TerrainResY)
+	: m_TerrainResX(TerrainResX)
+	, m_TerrainResY(TerrainResY)
 {
 	for(int i = 0; i < 255; i++)
 		m_KeyboardMask[i] = false;
@@ -46,7 +46,7 @@ CRainSimulation::~CRainSimulation()
 bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 {
 	//create cloth model
-	m_pClothModel = CTriMesh::CreatePlane(m_ClothResX, m_ClothResY);
+	/*m_pClothModel = CTriMesh::CreatePlane(m_ClothResX, m_ClothResY);
 	if(!m_pClothModel)
 	{
 		cout<<"Failed to create cloth."<<endl;
@@ -56,18 +56,39 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	{
 		cout<<"Failed to create cloth OpenGL resources"<<endl;
 		return false;
+	}*/
+
+	//create terrain model
+	m_pTerrainModel = CTriMesh::CreatePlane(m_TerrainResX, m_TerrainResY);
+	if (!m_pTerrainModel)
+	{
+		cout << "Failed to create terrain." << endl;
+		return false;
+	}
+	if (!m_pTerrainModel->CreateGLResources())
+	{
+		cout << "Failed to create terrain OpenGL resources" << endl;
+		return false;
 	}
 
 	//load cloth texture
-	m_pClothTexture = new CGLTexture();
+	/*m_pClothTexture = new CGLTexture();
 	if(!m_pClothTexture->loadTGA("Assets/clothTexture.tga"))
 	{
 		cout<<"Failed to load cloth texture"<<endl;
 		return false;
+	}*/
+
+	//load terrain texture
+	m_pTerrainTexture = new CGLTexture();
+	if (!m_pTerrainTexture->loadTGA("Assets/terrain01.tga"))
+	{
+		cout << "Failed to load terrain texture" << endl;
+		return false;
 	}
 
 	//load environment
-	m_pEnvironment = CTriMesh::LoadFromObj("clothscene.obj", hlsl::identity<float,4,4>());
+	/*m_pEnvironment = CTriMesh::LoadFromObj("clothscene.obj", hlsl::identity<float,4,4>());
 	if(!m_pEnvironment)
 	{
 		cout<<"Failed to create cloth environment."<<endl;
@@ -77,11 +98,11 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	{
 		cout<<"Failed to create environment OpenGL resources"<<endl;
 		return false;
-	}
+	}*/
 
 
-	m_pSphere = gluNewQuadric();
-	gluQuadricNormals(m_pSphere, GLU_SMOOTH);
+	//m_pSphere = gluNewQuadric();
+	//gluQuadricNormals(m_pSphere, GLU_SMOOTH);
 
 	///////////////////////////////////////////////////////////
 	// shader programs
@@ -135,13 +156,13 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 
 	cl_int clError, clError2;
 
-	m_clPosArray = clCreateFromGLBuffer(Context, CL_MEM_READ_WRITE, m_pClothModel->GetVertexBuffer(), &clError);
-	m_clNormalArray = clCreateFromGLBuffer(Context, CL_MEM_READ_WRITE, m_pClothModel->GetNormalBuffer(), &clError2);
+	m_clPosArray = clCreateFromGLBuffer(Context, CL_MEM_READ_WRITE, m_pTerrainModel->GetVertexBuffer(), &clError);
+	m_clNormalArray = clCreateFromGLBuffer(Context, CL_MEM_READ_WRITE, m_pTerrainModel->GetNormalBuffer(), &clError2);
 	clError |= clError2;
 
-	m_clPosArrayAux = clCreateBuffer(Context, CL_MEM_READ_WRITE, m_ClothResX * m_ClothResY * sizeof(hlsl::float4), 0, &clError2);
+	m_clPosArrayAux = clCreateBuffer(Context, CL_MEM_READ_WRITE, m_TerrainResX * m_TerrainResY * sizeof(hlsl::float4), 0, &clError2);
 	clError |= clError2;
-	m_clPosArrayOld = clCreateBuffer(Context, CL_MEM_READ_WRITE, m_ClothResX * m_ClothResY * sizeof(hlsl::float4), 0, &clError2);
+	m_clPosArrayOld = clCreateBuffer(Context, CL_MEM_READ_WRITE, m_TerrainResX * m_TerrainResY * sizeof(hlsl::float4), 0, &clError2);
 	clError |= clError2;
 
 	V_RETURN_FALSE_CL(clError, "Error allocating device arrays.");

@@ -61,13 +61,15 @@ public:
 	virtual void OnWindowResized(int Width, int Height);
 
 protected:
-	unsigned int			m_ClothResX = 0;
-	unsigned int			m_ClothResY = 0;
+	unsigned int			m_TerrainResX = 0;
+	unsigned int			m_TerrainResY = 0;
 	unsigned int			m_FrameCounter = 0;
 
+	CTriMesh*				m_pTerrainModel = nullptr;
 	CTriMesh*				m_pClothModel = nullptr;
 	CTriMesh*				m_pEnvironment = nullptr;
 	CGLTexture*				m_pClothTexture = nullptr;
+	CGLTexture*				m_pTerrainTexture = nullptr;
 	GLUquadricObj*			m_pSphere = nullptr;
 	float					m_SphereRadius = 0.2f;
 	hlsl::float4			m_SpherePos = hlsl::float4(0.0f, 0.0f, 0.0f, 1.0f);
