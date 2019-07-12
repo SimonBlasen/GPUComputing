@@ -16,6 +16,7 @@ GPU Computing / GPGPU Praktikum source code.
 
 #include "HLSLEx.h"
 
+#include <math.h>
 #include <string>
 
 #include "CL/cl_gl.h"
@@ -43,8 +44,24 @@ CRainSimulation::~CRainSimulation()
 	ReleaseResources();
 }
 
+float CRainSimulation::Gauss2D(float x, float y, float uX, float uY, float variant)
+{
+	return (1.f / (2.f * CL_M_PI * variant * variant));
+}
+
 bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 {
+	m_hRainArray = new float[m_TerrainResX * m_TerrainResY];
+
+	for (int x = 0; x < m_TerrainResX; x++)
+	{
+		for (int y = 0; y < m_TerrainResY; y++)
+		{
+
+		}
+	}
+
+
 	//create cloth model
 	/*m_pClothModel = CTriMesh::CreatePlane(m_ClothResX, m_ClothResY);
 	if(!m_pClothModel)
@@ -165,6 +182,9 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	m_clPosArrayOld = clCreateBuffer(Context, CL_MEM_READ_WRITE, m_TerrainResX * m_TerrainResY * sizeof(hlsl::float4), 0, &clError2);
 	clError |= clError2;
 
+	m_clRainArray = clCreateBuffer(Context, CL_MEM_READ_WRITE, m_TerrainResX * m_TerrainResY * sizeof(hlsl::float4), 0, &clError2);
+	clError |= clError2;
+
 	V_RETURN_FALSE_CL(clError, "Error allocating device arrays.");
 
 	string programCode;
@@ -191,7 +211,7 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	// We scale the distance by 0.9 to get a nicer look for the cloth (more folds).
 	float restDistance = 1.f / ((float)m_TerrainResX)*0.9f;
 
-
+	m_TerrainSeed = 0;
 
 	clError = clSetKernelArg(m_InitTerrainKernel, 0, sizeof(unsigned int), &m_TerrainResX);
 	clError |= clSetKernelArg(m_InitTerrainKernel, 1, sizeof(unsigned int), &m_TerrainResY);
@@ -208,6 +228,7 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	clError |= clSetKernelArg(m_IntegrateKernel, 1, sizeof(unsigned int), &m_TerrainResY);
 	clError |= clSetKernelArg(m_IntegrateKernel, 2, sizeof(cl_mem), (void*) &m_clPosArray);
 	clError |= clSetKernelArg(m_IntegrateKernel, 3, sizeof(cl_mem), (void*) &m_clPosArrayOld);
+	clError |= clSetKernelArg(m_IntegrateKernel, 4, sizeof(cl_mem), (void*)& m_clRainArray);
 	V_RETURN_FALSE_CL(clError, "Failed to set integration kernel params");
 
 	clError  = clSetKernelArg(m_ConstraintKernel, 0, sizeof(unsigned int), &m_TerrainResX);
@@ -227,6 +248,8 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	clError |= clSetKernelArg(m_CollisionsKernel, 2, sizeof(cl_mem), (void*) &m_clPosArray);
 	// Dynamic sphere parameters are updated before kernel launch
 	V_RETURN_FALSE_CL(clError, "Failed to set collision kernel params");
+
+
 
 	return true;
 }
@@ -260,6 +283,7 @@ void CRainSimulation::ReleaseResources()
 	SAFE_RELEASE_MEMOBJECT(m_clPosArrayOld);
 	SAFE_RELEASE_MEMOBJECT(m_clNormalArray);
 	SAFE_RELEASE_MEMOBJECT(m_clPosArray);
+	SAFE_RELEASE_MEMOBJECT(m_clRainArray);
 
 	SAFE_RELEASE_KERNEL(m_IntegrateKernel);
 	SAFE_RELEASE_KERNEL(m_NormalKernel);
@@ -303,6 +327,8 @@ void CRainSimulation::ComputeGPU(cl_context , cl_command_queue CommandQueue, siz
 
 		clErr = clEnqueueNDRangeKernel(CommandQueue, m_InitTerrainKernel, 2, 0, globalWorkSize, LocalWorkSize, 0, 0, 0);
 		V_RETURN_CL(clErr, "Error executing m_InitTerrainKernel");
+
+		V_RETURN_CL(clEnqueueWriteBuffer(CommandQueue, m_clRainArray, CL_FALSE, 0, m_TerrainResX * m_TerrainResY * sizeof(cl_float), m_hRainArray, 0, NULL, NULL), "Error copying data from host to device!");
 
 		cout << "Inited Terrain" << endl;
 	}

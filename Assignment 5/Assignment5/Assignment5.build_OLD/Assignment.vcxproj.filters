@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CClothSimulationTask.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CParticleSystemTask.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CRainSimulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CAssignment4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CTriMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CGLTexture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\GLCommon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\HLSL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CClothSimulationTask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CParticleSystemTask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CRainSimulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CAssignment4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CTriMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CGLTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\GLCommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\HLSL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\HLSLEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\clothsim.cl" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\ParticleSystem.cl" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\Scan.cl" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\TerrainSim.cl" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\forcefield.frag" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\mesh.frag" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\meshtextured.frag" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\particles.frag" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\forcefield.vert" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\mesh.vert" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\meshtextured.vert" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\particles.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{44EB33F3-5C9E-3B1A-B45C-1F25875E6DFC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{50DE9387-3EAD-343B-8802-41B293A27495}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

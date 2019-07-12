@@ -1,0 +1,424 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E9B4617E-5FEF-3A5F-86AE-3637FFA52DD0}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>Assignment</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Assignment.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Assignment</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Assignment.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Assignment</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Assignment.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Assignment</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Assignment.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Assignment</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different  "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/glew/Debug/glew64.dll" "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/Debug"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\lib\x64\OpenCL.lib;glfw\src\Debug\glfw3.lib;opengl32.lib;glew\Debug\glew64.lib;GLU32.lib;Common\Debug\GPUCommon.lib;opengl32.lib;gdi32.lib;user32.lib;kernel32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/Debug/Assignment.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/Debug/Assignment.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different  "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/glew/Release/glew64.dll" "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/Release"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\lib\x64\OpenCL.lib;glfw\src\Release\glfw3.lib;opengl32.lib;glew\Release\glew64.lib;GLU32.lib;Common\Release\GPUCommon.lib;opengl32.lib;gdi32.lib;user32.lib;kernel32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/Release/Assignment.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/Release/Assignment.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different  "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/glew/MinSizeRel/glew64.dll" "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/MinSizeRel"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\lib\x64\OpenCL.lib;glfw\src\MinSizeRel\glfw3.lib;opengl32.lib;glew\MinSizeRel\glew64.lib;GLU32.lib;Common\MinSizeRel\GPUCommon.lib;opengl32.lib;gdi32.lib;user32.lib;kernel32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/MinSizeRel/Assignment.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/MinSizeRel/Assignment.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glfw\include;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different  "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/glew/RelWithDebInfo/glew64.dll" "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/RelWithDebInfo"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\lib\x64\OpenCL.lib;glfw\src\RelWithDebInfo\glfw3.lib;opengl32.lib;glew\RelWithDebInfo\glew64.lib;GLU32.lib;Common\RelWithDebInfo\GPUCommon.lib;opengl32.lib;gdi32.lib;user32.lib;kernel32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/RelWithDebInfo/Assignment.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/RelWithDebInfo/Assignment.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5" "-BD:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build" --check-stamp-file "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\WindowsPaths.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeCCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeCXXCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeRCCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeSystem.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\arch.c;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CMakeLists.txt;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\ChangeWorkingDirectory.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\FindOpenCL.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\TargetArch.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\WorkingDirectory.vcxproj.user.in;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5" "-BD:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build" --check-stamp-file "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\WindowsPaths.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeCCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeCXXCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeRCCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeSystem.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\arch.c;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CMakeLists.txt;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\ChangeWorkingDirectory.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\FindOpenCL.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\TargetArch.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\WorkingDirectory.vcxproj.user.in;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5" "-BD:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build" --check-stamp-file "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\WindowsPaths.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeCCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeCXXCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeRCCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeSystem.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\arch.c;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CMakeLists.txt;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\ChangeWorkingDirectory.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\FindOpenCL.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\TargetArch.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\WorkingDirectory.vcxproj.user.in;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5" "-BD:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build" --check-stamp-file "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\Platform\WindowsPaths.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeCCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeCXXCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeRCCompiler.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\3.14.3\CMakeSystem.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\arch.c;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CMakeLists.txt;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\ChangeWorkingDirectory.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\FindOpenCL.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\TargetArch.cmake;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\cmake\WorkingDirectory.vcxproj.user.in;D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\clothsim.cl" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\ParticleSystem.cl" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\Scan.cl" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\TerrainSim.cl" />
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CClothSimulationTask.cpp" />
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CParticleSystemTask.cpp" />
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CRainSimulation.cpp" />
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CAssignment4.cpp" />
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CTriMesh.cpp" />
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CGLTexture.cpp" />
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\GLCommon.cpp" />
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\main.cpp" />
+    <ClCompile Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\HLSL.cpp" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\forcefield.frag" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\mesh.frag" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\meshtextured.frag" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\particles.frag" />
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CClothSimulationTask.h" />
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CParticleSystemTask.h" />
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CRainSimulation.h" />
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CAssignment4.h" />
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CTriMesh.h" />
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\CGLTexture.h" />
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\GLCommon.h" />
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\HLSL.h" />
+    <ClInclude Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\HLSLEx.h" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\forcefield.vert" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\mesh.vert" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\meshtextured.vert" />
+    <None Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5\particles.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\ZERO_CHECK.vcxproj">
+      <Project>{775AFFD9-DC40-3ABA-A8A2-39EAC2FE96F0}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\Common\GPUCommon.vcxproj">
+      <Project>{0D80714A-D5BE-3C17-8C4F-C7BEE928EB3C}</Project>
+      <Name>GPUCommon</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\glew\glew64.vcxproj">
+      <Project>{CC546458-AB77-3539-BB1C-5479357BA619}</Project>
+      <Name>glew64</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\glfw\src\glfw.vcxproj">
+      <Project>{3EE1D02C-4FEC-3ABB-BD16-1DCBE4CBB6B7}</Project>
+      <Name>glfw</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\ddb8dc58ca3e12a621399779dff5c965\PACKAGE_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{63C5C23B-4B8E-361F-AA25-1A9B8C11AABB}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

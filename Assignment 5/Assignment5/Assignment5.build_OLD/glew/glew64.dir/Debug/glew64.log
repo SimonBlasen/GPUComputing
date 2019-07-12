@@ -1,0 +1,6 @@
+﻿  Building Custom Rule D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/glew/CMakeLists.txt
+  CMake does not need to re-run because D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/glew/CMakeFiles/generate.stamp is up-to-date.
+cl : Befehlszeile warning D9002: Unbekannte Option "/O0" wird ignoriert.
+  glew.c
+     Bibliothek "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/glew/Debug/glew64.lib" und Objekt "D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/glew/Debug/glew64.exp" werden erstellt.
+  glew64.vcxproj -> D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\glew\Debug\glew64.dll

@@ -1,0 +1,13 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.14/Modules/CheckIncludeFile.cmake
+C:/Program Files/CMake/share/cmake-3.14/Modules/CheckLibraryExists.cmake
+C:/Program Files/CMake/share/cmake-3.14/Modules/CheckSymbolExists.cmake
+C:/Program Files/CMake/share/cmake-3.14/Modules/FindOpenGL.cmake
+C:/Program Files/CMake/share/cmake-3.14/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.14/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-3.14/Modules/FindThreads.cmake
+D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/glfw/CMakeLists.txt
+D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/glfw/src/glfw3.pc.in
+D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/glfw/src/glfwConfig.cmake.in
+D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/glfw/src/glfwConfigVersion.cmake.in
+D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/glfw/src/glfw_config.h.in

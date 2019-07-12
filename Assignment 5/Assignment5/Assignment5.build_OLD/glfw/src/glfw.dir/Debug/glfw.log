@@ -1,0 +1,16 @@
+﻿  Building Custom Rule D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5/glfw/src/CMakeLists.txt
+  CMake does not need to re-run because D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/glfw/src/CMakeFiles/generate.stamp is up-to-date.
+  context.c
+  init.c
+  input.c
+  monitor.c
+  window.c
+  win32_init.c
+  win32_monitor.c
+  win32_time.c
+  win32_tls.c
+  win32_window.c
+  winmm_joystick.c
+  wgl_context.c
+  Code wird generiert...
+  glfw.vcxproj -> D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\glfw\src\Debug\glfw3.lib

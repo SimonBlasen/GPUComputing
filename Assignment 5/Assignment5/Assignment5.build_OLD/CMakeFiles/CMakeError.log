@@ -1,0 +1,16 @@
+Determining if the include file pthread.h exists failed with the following output:
+Change Dir: D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/MSBuild/15.0/Bin/MSBuild.exe cmTC_4eb2a.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=15.0 /v:m 
+Microsoft (R)-Buildmodul, Version 15.7.179.6572 fr .NET Framework
+Copyright (C) Microsoft Corporation. Alle Rechte vorbehalten.
+
+  Microsoft (R) C/C++-Optimierungscompiler Version 19.14.26429.4 fr x64
+  Copyright (C) Microsoft Corporation. Alle Rechte vorbehalten.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_4eb2a.dir\Debug\\" /Fd"cmTC_4eb2a.dir\Debug\vc141.pdb" /Gd /TC /errorReport:queue "D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\CMakeTmp\CheckIncludeFile.c"
+  CheckIncludeFile.c
+  
+D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\CMakeTmp\CheckIncludeFile.c(1): fatal error C1083: Datei (Include) kann nicht ge”ffnet werden: "pthread.h": No such file or directory [D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\CMakeFiles\CMakeTmp\cmTC_4eb2a.vcxproj]
+
+

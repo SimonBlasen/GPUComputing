@@ -1,0 +1,7 @@
+﻿  Building Custom Rule D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Common/CMakeLists.txt
+  CMake does not need to re-run because D:/Dokumente/SVN/Git/GPUComputing/Assignment 5/Assignment5/Assignment5.build/Common/CMakeFiles/generate.stamp is up-to-date.
+  CAssignmentBase.cpp
+  CLUtil.cpp
+  CTimer.cpp
+  Code wird generiert...
+  GPUCommon.vcxproj -> D:\Dokumente\SVN\Git\GPUComputing\Assignment 5\Assignment5\Assignment5.build\Common\Debug\GPUCommon.lib

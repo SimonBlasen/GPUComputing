@@ -22,6 +22,7 @@
 
 #include "CTriMesh.h"
 #include "CGLTexture.h"
+#include <math.h>
 
 //! A4 / T2 Cloth simulation
 /*!
@@ -60,6 +61,8 @@ public:
 
 	virtual void OnWindowResized(int Width, int Height);
 
+	virtual float Gauss2D(float x, float y, float uX, float uY, float variant);
+
 protected:
 	unsigned int			m_TerrainResX = 0;
 	unsigned int			m_TerrainResY = 0;
@@ -89,8 +92,10 @@ protected:
 	//device buffers for cloth simulation
 	cl_mem					m_clPosArray = nullptr; //current position of the particles (shared with OpenGL)
 	cl_mem					m_clPosArrayOld = nullptr;
+	cl_mem					m_clRainArray = nullptr;
 	cl_mem					m_clPosArrayAux = nullptr;
 	cl_mem					m_clNormalArray = nullptr;
+	float*					m_hRainArray;
 
 	cl_program				m_TerrainSimProgram = nullptr;
 	cl_kernel				m_NormalKernel = nullptr;
