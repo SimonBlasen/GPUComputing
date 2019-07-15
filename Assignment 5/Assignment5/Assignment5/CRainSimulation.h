@@ -96,6 +96,8 @@ protected:
 	cl_mem					m_clPosArrayAux = nullptr;
 	cl_mem					m_clNormalArray = nullptr;
 	float*					m_hRainArray;
+	hlsl::float4*			m_rainSpots;
+	unsigned int			m_n_rainSpots;
 
 	cl_program				m_TerrainSimProgram = nullptr;
 	cl_kernel				m_NormalKernel = nullptr;

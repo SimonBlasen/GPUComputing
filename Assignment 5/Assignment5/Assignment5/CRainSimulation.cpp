@@ -46,18 +46,34 @@ CRainSimulation::~CRainSimulation()
 
 float CRainSimulation::Gauss2D(float x, float y, float uX, float uY, float variant)
 {
-	return (1.f / (2.f * CL_M_PI * variant * variant));
+	return (1.f / (2.f * CL_M_PI * variant * variant)) * exp(-1.f * ((x - uX) * (x - uX) + (y - uY) * (y - uY)) / (2.f * variant * variant));
 }
 
 bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 {
+	m_n_rainSpots = 1;
+
+	/*
+		x:	uX
+		y:	uY
+		z:	variant
+		w:	scale
+	*/
+	m_rainSpots = new hlsl::float4[m_n_rainSpots];
+	m_rainSpots[0] = hlsl::float4(m_TerrainResX * 0.5f, m_TerrainResY * 0.5f, 10.f, 1.f);
+
+
 	m_hRainArray = new float[m_TerrainResX * m_TerrainResY];
 
 	for (int x = 0; x < m_TerrainResX; x++)
 	{
 		for (int y = 0; y < m_TerrainResY; y++)
 		{
-
+			float gauss = 0.f;
+			for (int i = 0; i < m_n_rainSpots; i++)
+			{
+				gauss += Gauss2D(x, y, m_rainSpots[i].x, m_rainSpots[i].y, m_rainSpots[i].z) * m_rainSpots[i].w;
+			}
 		}
 	}
 
