@@ -95,7 +95,7 @@ protected:
 	cl_mem					m_clRainArray = nullptr;
 	cl_mem					m_clPosArrayAux = nullptr;
 	cl_mem					m_clNormalArray = nullptr;
-	float*					m_hRainArray;
+	unsigned int*			m_hRainArray;
 	hlsl::float4*			m_rainSpots;
 	unsigned int			m_n_rainSpots;
 

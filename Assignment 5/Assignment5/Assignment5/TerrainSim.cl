@@ -12,6 +12,7 @@
 
 #define ROOT_OF_2 1.4142135f
 #define DOUBLE_ROOT_OF_2 2.8284271f
+#define PI_HALF 1.5707963f
 
 
 
@@ -70,6 +71,11 @@ float perlin2d(float x, float y, float freq, int depth, unsigned long seed)
 
 
 
+
+float inverseTan(float x)
+{
+	return (3.f * x) / (1.f + 2.f * sqrt(1.f + x * x));
+}
 
 
 
@@ -149,7 +155,7 @@ __kernel void InitHeightfield(unsigned int width,
 	float4 x0 = d_pos[particleID];
 
 	//x0.y = x0.y + sin(x0.x * 20.f + x0.z * 26.f) * 0.06f + cos(x0.x * 23.f + x0.z * 16.f) * 0.06f;
-	x0.y = perlin2d(GID.x, GID.y, 0.01f, 1.f, seed) * 0.1f;
+	x0.y = perlin2d(GID.x, GID.y, 0.1f, 1.f, seed) * 0.1f;
 
 	d_pos[particleID] = x0;
 
@@ -160,7 +166,8 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 
-
+#define RAIN_IMPACT 0.01f
+#define RAIN_ABSORBATION 1
 
 
 
@@ -183,11 +190,16 @@ __kernel void InitHeightfield(unsigned int width,
 						unsigned int height, 
 						__global float4* d_pos,
 						__global float4* d_prevPos,
-						__global float4* d_rain,
+						__global unsigned int* d_rain,
 						float elapsedTime,
 						float prevElapsedTime,
-						float simulationTime) {
-							
+						float simulationTime,
+						unsigned int randomSeedX,
+						unsigned int randomSeedY) {
+
+	  int2 GID;
+	  GID.x = get_global_id(0);
+	  GID.y = get_global_id(1);
 	// Make sure the work-item does not map outside the cloth
     if(get_global_id(0) >= width || get_global_id(1) >= height)
 		return;
@@ -199,8 +211,175 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 	unsigned int particleID = get_global_id(0) + get_global_id(1) * width;
+
+	unsigned int rainHere = d_rain[particleID];
+
+
+
+
+
+	float	slope0,
+		slope1,
+		slope2,
+		slope3,
+		slope4,
+		slope5,
+		slope6,
+		slope7;
+	if (GID.x + 1 < width && GID.y < height)
+		slope0 = d_pos[(GID.x + 1) * width + GID.y].y - d_pos[particleID].y;
+	else
+		slope0 = 0.f;
+	if (GID.x + 1 < width && GID.y + 1 < height)
+		slope1 = d_pos[(GID.x + 1) * width + (GID.y + 1)].y - d_pos[particleID].y;
+	else
+		slope1 = 0.f;
+	if (GID.x + 0 < width && GID.y + 1 < height)
+		slope2 = d_pos[(GID.x + 0) * width + (GID.y + 1)].y - d_pos[particleID].y;
+	else
+		slope2 = 0.f;
+	if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 1 < height)
+		slope3 = d_pos[(GID.x - 1) * width + (GID.y + 1)].y - d_pos[particleID].y;
+	else
+		slope3 = 0.f;
+	if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 0 >= 0 && GID.y + 0 < height)
+		slope4 = d_pos[(GID.x - 1) * width + (GID.y + 0)].y - d_pos[particleID].y;
+	else
+		slope4 = 0.f;
+	if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
+		slope5 = d_pos[(GID.x - 1) * width + (GID.y - 1)].y - d_pos[particleID].y;
+	else
+		slope5 = 0.f;
+	if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
+		slope6 = d_pos[(GID.x + 0) * width + (GID.y - 1)].y - d_pos[particleID].y;
+	else
+		slope6 = 0.f;
+	if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
+		slope7 = d_pos[(GID.x + 1) * width + (GID.y - 1)].y - d_pos[particleID].y;
+	else
+		slope7 = 0.f;
+
+
+	uint seed = randomSeedX + GID.x;
+	uint t = seed ^ (seed << 11);
+	uint random = randomSeedY ^ (randomSeedY >> 19) ^ (t ^ (t >> 8));
+
+
+
+
+
+
+	atomic_add(d_rain + particleID, -rainHere);
+	unsigned int resultRain = 0;
+	if (RAIN_ABSORBATION > rainHere)
+	{
+		resultRain = 0;
+	}
+	else
+	{
+		//atomic_add(d_rain[particleID], -RAIN_ABSORBATION);
+		resultRain = rainHere - RAIN_ABSORBATION;
+	}
+
+	float randF = (((float)random) / (4294967296.f));
+
+	slope0 = inverseTan(slope0) + PI_HALF;
+	slope1 = inverseTan(slope1) + PI_HALF;
+	slope2 = inverseTan(slope2) + PI_HALF;
+	slope3 = inverseTan(slope3) + PI_HALF;
+	slope4 = inverseTan(slope4) + PI_HALF;
+	slope5 = inverseTan(slope5) + PI_HALF;
+	slope6 = inverseTan(slope6) + PI_HALF;
+	slope7 = inverseTan(slope7) + PI_HALF;
+
+	float sumSlopes = slope0
+		+ slope1
+		+ slope2
+		+ slope3
+		+ slope4
+		+ slope5
+		+ slope6
+		+ slope7;
+
+	slope0 = slope0 / sumSlopes;
+	slope1 = slope1 / sumSlopes;
+	slope2 = slope2 / sumSlopes;
+	slope3 = slope3 / sumSlopes;
+	slope4 = slope4 / sumSlopes;
+	slope5 = slope5 / sumSlopes;
+	slope6 = slope6 / sumSlopes;
+	slope7 = slope7 / sumSlopes;
+
+	slope1 = slope0 + slope1;
+	slope2 = slope1 + slope2;
+	slope3 = slope2 + slope3;
+	slope4 = slope3 + slope4;
+	slope5 = slope4 + slope5;
+	slope6 = slope5 + slope6;
+	slope7 = slope6 + slope7;	// is equal 1
+
+	unsigned int moveDir = 0;
+	if (randF < slope0)
+		moveDir = 0;
+	else if (randF < slope1)
+		moveDir = 1;
+	else if (randF < slope2)
+		moveDir = 2;
+	else if (randF < slope3)
+		moveDir = 3;
+	else if (randF < slope4)
+		moveDir = 4;
+	else if (randF < slope5)
+		moveDir = 5;
+	else if (randF < slope6)
+		moveDir = 6;
+	else
+		moveDir = 7;
+
+
+	
+	if (moveDir == 0)
+		atomic_add(d_rain + (GID.x + 1) * width + (GID.y + 0), resultRain);
+	if (moveDir == 1)
+		atomic_add(d_rain + (GID.x + 1) * width + (GID.y + 1), resultRain);
+	if (moveDir == 2)
+		atomic_add(d_rain + (GID.x + 0) * width + (GID.y + 1), resultRain);
+	if (moveDir == 3)
+		atomic_add(d_rain + (GID.x - 1) * width + (GID.y + 1), resultRain);
+	if (moveDir == 4)
+		atomic_add(d_rain + (GID.x - 1) * width + (GID.y + 0), resultRain);
+	if (moveDir == 5)
+		atomic_add(d_rain + (GID.x - 1) * width + (GID.y - 1), resultRain);
+	if (moveDir == 6)
+		atomic_add(d_rain + (GID.x + 0) * width + (GID.y - 1), resultRain);
+	if (moveDir == 7)
+		atomic_add(d_rain + (GID.x + 1) * width + (GID.y - 1), resultRain);
+		
+
+
+
+
+
+
+	float4 x0 = d_pos[particleID];
+
+	float lerpFac = 1.f;
+	if (x0.y < 1.f)
+	{
+		lerpFac = x0.y;
+	}
+
+	x0.y = x0.y - RAIN_IMPACT * lerpFac * (rainHere > 0 ? 1.f : 0.f);
+
+	d_pos[particleID] = x0;
+
+
+
+
+
+
 	// This is just to keep every 8th particle of the first row attached to the bar
-    if(particleID > width-1 || ( particleID & ( 7 )) != 0){
+    /*if(particleID > width-1 || ( particleID & ( 7 )) != 0){
 
 		float4 windA = (float4) (sin(simulationTime * 1.1f) * 2.f, 0.f, sin(simulationTime * 1.0f) * 5.f, 0.f);
 
@@ -233,7 +412,7 @@ __kernel void InitHeightfield(unsigned int width,
 		x1.w = 0.f;
 		d_prevPos[particleID] = x1;
 
-    }
+    }*/
 }
 
 
