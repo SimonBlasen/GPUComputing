@@ -168,6 +168,7 @@ __kernel void InitHeightfield(unsigned int width,
 
 #define RAIN_IMPACT 0.01f
 #define RAIN_ABSORBATION 1
+#define DELTA_T 0.7f
 
 
 
@@ -227,70 +228,83 @@ __kernel void InitHeightfield(unsigned int width,
 		slope6,
 		slope7;
 	if (GID.x + 1 < width && GID.y < height)
-		slope0 = d_pos[(GID.x + 1) * width + GID.y].y - d_pos[particleID].y;
+		slope0 = d_pos[(GID.x + 1) + width * GID.y].y - d_pos[particleID].y;
 	else
-		slope0 = 0.f;
+		slope0 = 100000.f;
 	if (GID.x + 1 < width && GID.y + 1 < height)
-		slope1 = d_pos[(GID.x + 1) * width + (GID.y + 1)].y - d_pos[particleID].y;
+		slope1 = d_pos[(GID.x + 1) + width * (GID.y + 1)].y - d_pos[particleID].y;
 	else
-		slope1 = 0.f;
+		slope1 = 100000.f;
 	if (GID.x + 0 < width && GID.y + 1 < height)
-		slope2 = d_pos[(GID.x + 0) * width + (GID.y + 1)].y - d_pos[particleID].y;
+		slope2 = d_pos[(GID.x + 0) + width * (GID.y + 1)].y - d_pos[particleID].y;
 	else
-		slope2 = 0.f;
+		slope2 = 100000.f;
 	if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 1 < height)
-		slope3 = d_pos[(GID.x - 1) * width + (GID.y + 1)].y - d_pos[particleID].y;
+		slope3 = d_pos[(GID.x - 1) + width * (GID.y + 1)].y - d_pos[particleID].y;
 	else
-		slope3 = 0.f;
+		slope3 = 100000.f;
 	if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 0 >= 0 && GID.y + 0 < height)
-		slope4 = d_pos[(GID.x - 1) * width + (GID.y + 0)].y - d_pos[particleID].y;
+		slope4 = d_pos[(GID.x - 1) + width * (GID.y + 0)].y - d_pos[particleID].y;
 	else
-		slope4 = 0.f;
+		slope4 = 100000.f;
 	if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
-		slope5 = d_pos[(GID.x - 1) * width + (GID.y - 1)].y - d_pos[particleID].y;
+		slope5 = d_pos[(GID.x - 1) + width * (GID.y - 1)].y - d_pos[particleID].y;
 	else
-		slope5 = 0.f;
+		slope5 = 100000.f;
 	if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
-		slope6 = d_pos[(GID.x + 0) * width + (GID.y - 1)].y - d_pos[particleID].y;
+		slope6 = d_pos[(GID.x + 0) + width * (GID.y - 1)].y - d_pos[particleID].y;
 	else
-		slope6 = 0.f;
+		slope6 = 100000.f;
 	if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
-		slope7 = d_pos[(GID.x + 1) * width + (GID.y - 1)].y - d_pos[particleID].y;
+		slope7 = d_pos[(GID.x + 1) + width * (GID.y - 1)].y - d_pos[particleID].y;
 	else
-		slope7 = 0.f;
+		slope7 = 100000.f;
 
 
 	uint seed = randomSeedX + GID.x;
-	uint t = seed ^ (seed << 11);
-	uint random = randomSeedY ^ (randomSeedY >> 19) ^ (t ^ (t >> 8));
+	//uint t = seed ^ (seed << 11);
+	//uint random = randomSeedY ^ (randomSeedY >> 19) ^ (t ^ (t >> 8));
+
+	uint random = (randomSeedX + GID.x + randomSeedY + GID.y) % 32767;
+	//uint random = 32767/2;
 
 
 
 
 
-
-	atomic_add(d_rain + particleID, -rainHere);
 	unsigned int resultRain = 0;
 	if (RAIN_ABSORBATION > rainHere)
 	{
 		resultRain = 0;
+		if (rainHere != 0)
+		{
+			//atomic_add(d_rain + particleID, -rainHere);
+		}
 	}
 	else
 	{
-		//atomic_add(d_rain[particleID], -RAIN_ABSORBATION);
 		resultRain = rainHere - RAIN_ABSORBATION;
+		//atomic_add(d_rain + particleID, -RAIN_ABSORBATION);
 	}
 
-	float randF = (((float)random) / (4294967296.f));
+	atomic_add(d_rain + particleID, -rainHere);
 
-	slope0 = inverseTan(slope0) + PI_HALF;
-	slope1 = inverseTan(slope1) + PI_HALF;
-	slope2 = inverseTan(slope2) + PI_HALF;
-	slope3 = inverseTan(slope3) + PI_HALF;
-	slope4 = inverseTan(slope4) + PI_HALF;
-	slope5 = inverseTan(slope5) + PI_HALF;
-	slope6 = inverseTan(slope6) + PI_HALF;
-	slope7 = inverseTan(slope7) + PI_HALF;
+
+
+
+	float randF = (((float)random) / (32767.f)); //(((float)random) / (4294967296.f));
+
+	//randF = 0.0f;
+
+	slope0 = slope0 > 99990.f ? 0.f : inverseTan(-slope0) + PI_HALF;
+	slope1 = slope1 > 99990.f ? 0.f : inverseTan(-slope1) + PI_HALF;
+	slope2 = slope2 > 99990.f ? 0.f : inverseTan(-slope2) + PI_HALF;
+	slope3 = slope3 > 99990.f ? 0.f : inverseTan(-slope3) + PI_HALF;
+	slope4 = slope4 > 99990.f ? 0.f : inverseTan(-slope4) + PI_HALF;
+	slope5 = slope5 > 99990.f ? 0.f : inverseTan(-slope5) + PI_HALF;
+	slope6 = slope6 > 99990.f ? 0.f : inverseTan(-slope6) + PI_HALF;
+	slope7 = slope7 > 99990.f ? 0.f : inverseTan(-slope7) + PI_HALF;
+
 
 	float sumSlopes = slope0
 		+ slope1
@@ -336,26 +350,51 @@ __kernel void InitHeightfield(unsigned int width,
 	else
 		moveDir = 7;
 
+	//moveDir = 1;
 
 	
 	if (moveDir == 0)
-		atomic_add(d_rain + (GID.x + 1) * width + (GID.y + 0), resultRain);
-	if (moveDir == 1)
-		atomic_add(d_rain + (GID.x + 1) * width + (GID.y + 1), resultRain);
-	if (moveDir == 2)
-		atomic_add(d_rain + (GID.x + 0) * width + (GID.y + 1), resultRain);
-	if (moveDir == 3)
-		atomic_add(d_rain + (GID.x - 1) * width + (GID.y + 1), resultRain);
-	if (moveDir == 4)
-		atomic_add(d_rain + (GID.x - 1) * width + (GID.y + 0), resultRain);
-	if (moveDir == 5)
-		atomic_add(d_rain + (GID.x - 1) * width + (GID.y - 1), resultRain);
-	if (moveDir == 6)
-		atomic_add(d_rain + (GID.x + 0) * width + (GID.y - 1), resultRain);
-	if (moveDir == 7)
-		atomic_add(d_rain + (GID.x + 1) * width + (GID.y - 1), resultRain);
+	{
+		if (GID.x + 1 < width && GID.y < height)
+			atomic_add(d_rain + (GID.x + 1) + width * (GID.y + 0), resultRain);
+	}
+	else if (moveDir == 1)
+	{
+		if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
+			atomic_add(d_rain + (GID.x + 1) + width * (GID.y + 1), resultRain);
+	}
+	else if (moveDir == 2)
+	{
+		if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
+			atomic_add(d_rain + (GID.x + 0) + width * (GID.y + 1), resultRain);
+	}
+	else if (moveDir == 3)
+	{
+		if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
+			atomic_add(d_rain + (GID.x - 1) + width * (GID.y + 1), resultRain);
+	}
+	else if (moveDir == 4)
+	{
+		if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 0 >= 0 && GID.y + 0 < height)
+			atomic_add(d_rain + (GID.x - 1) + width * (GID.y + 0), resultRain);
+	}
+	else if (moveDir == 5)
+	{
+		if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
+			atomic_add(d_rain + (GID.x - 1) + width * (GID.y - 1), resultRain);
+	}
+	else if (moveDir == 6)
+	{
+		if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
+			atomic_add(d_rain + (GID.x + 0) + width * (GID.y - 1), resultRain);
+	}
+	else if (moveDir == 7)
+	{
+		if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
+			atomic_add(d_rain + (GID.x + 1) + width * (GID.y - 1), resultRain);
+	}
 		
-
+	
 
 
 
@@ -369,7 +408,10 @@ __kernel void InitHeightfield(unsigned int width,
 		lerpFac = x0.y;
 	}
 
-	x0.y = x0.y - RAIN_IMPACT * lerpFac * (rainHere > 0 ? 1.f : 0.f);
+	x0.y = x0.y - RAIN_IMPACT * lerpFac* (rainHere > 0 ? 1.f : 0.f) * DELTA_T;
+
+
+
 
 	d_pos[particleID] = x0;
 
