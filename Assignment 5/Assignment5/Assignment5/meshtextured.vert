@@ -1,11 +1,14 @@
-
+#extension GL_EXT_gpu_shader4 : enable
 varying vec3 norm;
 varying vec4 viewPos;
 varying vec2 tex;
+varying float rain;
 
 void main()
 {
 	vec4 v = vec4(gl_Vertex);
+	rain = v.w;
+
 	v.w = 1.0;
 
 	viewPos = gl_ModelViewMatrix * v;
@@ -20,5 +23,5 @@ void main()
     	norm *= -1.0;
 
     tex = gl_MultiTexCoord0.xy;
-    
+
 }

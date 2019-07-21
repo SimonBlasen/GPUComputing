@@ -348,7 +348,7 @@ void CTriMesh::DrawGL(GLenum mode)
 	CHECK_FOR_OGL_ERROR();
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_glVertexBuffer);
-	glVertexPointer(3, GL_FLOAT, sizeof(float4), 0);
+	glVertexPointer(4, GL_FLOAT, sizeof(float4), 0);
 	glBindBuffer(GL_ARRAY_BUFFER, m_glNormalBuffer);
 	glNormalPointer(GL_FLOAT, sizeof(float4), (char*)0);
 	glBindBuffer(GL_ARRAY_BUFFER, m_glTexCoordBuffer);

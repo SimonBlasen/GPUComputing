@@ -59,7 +59,7 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 		w:	scale
 	*/
 	m_rainSpots = new hlsl::float4[m_n_rainSpots];
-	m_rainSpots[0] = hlsl::float4(m_TerrainResX * 0.5f, m_TerrainResY * 0.5f, 5.f, 1000010.f);
+	m_rainSpots[0] = hlsl::float4(m_TerrainResX * 0.5f, m_TerrainResY * 0.5f, 15.f, 1010.f);
 
 	// Fit every distribution to be max 1
 	for (int i = 0; i < m_n_rainSpots; i++)
@@ -468,6 +468,7 @@ void CRainSimulation::Render()
 
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
 	glActiveTexture(GL_TEXTURE0);
 	//m_pClothTexture->bind();

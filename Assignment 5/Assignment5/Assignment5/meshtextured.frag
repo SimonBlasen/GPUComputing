@@ -1,6 +1,7 @@
 varying vec3 norm;
 varying vec4 viewPos;
 varying vec2 tex;
+varying float rain;
 
 uniform sampler2D texDiffuse;
 
@@ -16,6 +17,10 @@ void main()
 	vec4 surfColor = vec4(tex.x, tex.y, 0.5, 1.0);
 	
 	surfColor = texture( texDiffuse, tex.xy );
+	if (rain >= 1.f)
+	{
+		surfColor = vec4(1.0, 0.0, 0.0, 1.0);
+	}
 	
 	gl_FragColor = surfColor * cosTheta;
 }

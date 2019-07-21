@@ -169,6 +169,7 @@ __kernel void InitHeightfield(unsigned int width,
 #define RAIN_IMPACT 0.01f
 #define RAIN_ABSORBATION 1
 #define DELTA_T 0.7f
+#define SLOPE_FACTOR 1.f
 
 
 
@@ -265,7 +266,7 @@ __kernel void InitHeightfield(unsigned int width,
 	//uint t = seed ^ (seed << 11);
 	//uint random = randomSeedY ^ (randomSeedY >> 19) ^ (t ^ (t >> 8));
 
-	uint random = (randomSeedX + GID.x + randomSeedY + GID.y) % 32767;
+	uint random = (randomSeedX * GID.x * 401267 + randomSeedY * GID.y * 1013) % 32767;
 	//uint random = 32767/2;
 
 
@@ -287,7 +288,7 @@ __kernel void InitHeightfield(unsigned int width,
 		//atomic_add(d_rain + particleID, -RAIN_ABSORBATION);
 	}
 
-	atomic_add(d_rain + particleID, -rainHere);
+	atomic_add(d_rain + particleID, (-(rainHere) + (resultRain / 2)));
 
 
 
@@ -296,14 +297,14 @@ __kernel void InitHeightfield(unsigned int width,
 
 	//randF = 0.0f;
 
-	slope0 = slope0 > 99990.f ? 0.f : inverseTan(-slope0) + PI_HALF;
-	slope1 = slope1 > 99990.f ? 0.f : inverseTan(-slope1) + PI_HALF;
-	slope2 = slope2 > 99990.f ? 0.f : inverseTan(-slope2) + PI_HALF;
-	slope3 = slope3 > 99990.f ? 0.f : inverseTan(-slope3) + PI_HALF;
-	slope4 = slope4 > 99990.f ? 0.f : inverseTan(-slope4) + PI_HALF;
-	slope5 = slope5 > 99990.f ? 0.f : inverseTan(-slope5) + PI_HALF;
-	slope6 = slope6 > 99990.f ? 0.f : inverseTan(-slope6) + PI_HALF;
-	slope7 = slope7 > 99990.f ? 0.f : inverseTan(-slope7) + PI_HALF;
+	slope0 = slope0 > 99990.f ? 0.f : inverseTan(-slope0 * SLOPE_FACTOR) + PI_HALF;
+	slope1 = slope1 > 99990.f ? 0.f : inverseTan(-slope1 * SLOPE_FACTOR) + PI_HALF;
+	slope2 = slope2 > 99990.f ? 0.f : inverseTan(-slope2 * SLOPE_FACTOR) + PI_HALF;
+	slope3 = slope3 > 99990.f ? 0.f : inverseTan(-slope3 * SLOPE_FACTOR) + PI_HALF;
+	slope4 = slope4 > 99990.f ? 0.f : inverseTan(-slope4 * SLOPE_FACTOR) + PI_HALF;
+	slope5 = slope5 > 99990.f ? 0.f : inverseTan(-slope5 * SLOPE_FACTOR) + PI_HALF;
+	slope6 = slope6 > 99990.f ? 0.f : inverseTan(-slope6 * SLOPE_FACTOR) + PI_HALF;
+	slope7 = slope7 > 99990.f ? 0.f : inverseTan(-slope7 * SLOPE_FACTOR) + PI_HALF;
 
 
 	float sumSlopes = slope0
@@ -352,6 +353,7 @@ __kernel void InitHeightfield(unsigned int width,
 
 	//moveDir = 1;
 
+	resultRain = resultRain / 2;
 	
 	if (moveDir == 0)
 	{
@@ -410,6 +412,8 @@ __kernel void InitHeightfield(unsigned int width,
 
 	x0.y = x0.y - RAIN_IMPACT * lerpFac* (rainHere > 0 ? 1.f : 0.f) * DELTA_T;
 
+
+	x0.w = rainHere > 3 ? 100.f : 0.f;
 
 
 
