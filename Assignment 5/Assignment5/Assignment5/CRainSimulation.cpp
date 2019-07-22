@@ -232,8 +232,6 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	V_RETURN_FALSE_CL(clError, "Failed to create Normal kernel.");
 	m_ConstraintKernel = clCreateKernel(m_TerrainSimProgram, "SatisfyConstraints", &clError);
 	V_RETURN_FALSE_CL(clError, "Failed to create Constraint kernel.");
-	m_CollisionsKernel = clCreateKernel(m_TerrainSimProgram, "CheckCollisions", &clError);
-	V_RETURN_FALSE_CL(clError, "Failed to create Collision kernel.");
 
 	// Compute the rest distance between two particles.
 	// We scale the distance by 0.9 to get a nicer look for the cloth (more folds).
@@ -280,11 +278,6 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
     clError |= clSetKernelArg(m_NormalKernel, 3, sizeof(cl_mem), (void*) &m_clNormalArray);
 	V_RETURN_FALSE_CL(clError, "Failed to set normal computation kernel params");
 
-	clError  = clSetKernelArg(m_CollisionsKernel, 0, sizeof(unsigned int), &m_TerrainResX);
-    clError |= clSetKernelArg(m_CollisionsKernel, 1, sizeof(unsigned int), &m_TerrainResY);
-	clError |= clSetKernelArg(m_CollisionsKernel, 2, sizeof(cl_mem), (void*) &m_clPosArray);
-	// Dynamic sphere parameters are updated before kernel launch
-	V_RETURN_FALSE_CL(clError, "Failed to set collision kernel params");
 
 
 

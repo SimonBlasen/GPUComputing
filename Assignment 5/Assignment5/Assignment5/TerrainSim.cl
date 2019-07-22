@@ -14,6 +14,9 @@
 #define DOUBLE_ROOT_OF_2 2.8284271f
 #define PI_HALF 1.5707963f
 
+#define TILE_X 16 
+#define TILE_Y 16
+#define HALOSIZE 2
 
 
 
@@ -205,14 +208,145 @@ __kernel void InitHeightfield(unsigned int width,
 						unsigned int randomSeedX,
 						unsigned int randomSeedY) {
 
-	  int2 GID;
-	  GID.x = get_global_id(0);
-	  GID.y = get_global_id(1);
 	// Make sure the work-item does not map outside the cloth
     if(get_global_id(0) >= width || get_global_id(1) >= height)
 		return;
 
+	int2 GID;
+	GID.x = get_global_id(0);
+	GID.y = get_global_id(1);
 
+	int2 LID;
+	LID.x = get_local_id(0);
+	LID.y = get_local_id(1);
+
+	int2 LSIZE;
+	LSIZE.x = get_local_size(0);
+	LSIZE.y = get_local_size(1);
+
+
+
+
+
+	__local float4 tile[TILE_Y + HALOSIZE][TILE_X + HALOSIZE];
+
+
+
+	// Top side halo
+	if (LID.y == 0)
+	{
+		if (GID.y == 0)
+		{
+			tile[0][LID.x + 1] = 0.f;
+		}
+		else
+		{
+			tile[0][LID.x + 1] = d_pos[(GID.y - 1) * width + GID.x];
+		}
+	}
+
+	// Down side halo
+	if (LID.y == LSIZE.y - 1)
+	{
+		if (GID.y == height - 1)
+		{
+			tile[TILE_Y + 1][LID.x + 1] = 0.f;
+		}
+		else
+		{
+			tile[TILE_Y + 1][LID.x + 1] = d_pos[(GID.y + 1) * width + GID.x];
+		}
+	}
+
+	// Left side halo
+	if (LID.x == 0)
+	{
+		if (GID.x == 0)
+		{
+			tile[LID.y + 1][0] = 0.f;
+		}
+		else
+		{
+			tile[LID.y + 1][0] = d_pos[(GID.y) * width + GID.x - 1];
+		}
+	}
+
+	// Right side halo
+	if (LID.x == LSIZE.x - 1)
+	{
+		if (GID.x == width - 1)
+		{
+			tile[LID.y + 1][TILE_X + 1] = 0.f;
+		}
+		else
+		{
+			tile[LID.y + 1][TILE_X + 1] = d_pos[(GID.y) * width + GID.x + 1];
+		}
+	}
+
+
+
+
+	// Corners
+
+	// Left top
+	if (LID.x == 1 && LID.y == 1)
+	{
+		if (GID.x == 1 || GID.y == 1)
+		{
+			tile[0][0] = 0.f;
+		}
+		else
+		{
+			tile[0][0] = d_pos[(GID.y - 2) * width + GID.x - 2];
+		}
+	}
+
+	// Right top
+	if (LID.x == LSIZE.x - 2 && LID.y == 1)
+	{
+		if (GID.x == width - 2 || GID.y == 1)
+		{
+			tile[0][TILE_X + 1] = 0.f;
+		}
+		else
+		{
+			tile[0][TILE_X + 1] = d_pos[(GID.y - 2) * width + GID.x + 2];
+		}
+	}
+
+	// Left bottom
+	if (LID.x == 1 && LID.y == LSIZE.y - 2)
+	{
+		if (GID.x == 1 || GID.y == height - 2)
+		{
+			tile[TILE_Y + 1][0] = 0.f;
+		}
+		else
+		{
+			tile[TILE_Y + 1][0] = d_pos[(GID.y + 2) * width + GID.x - 2];
+		}
+	}
+
+	// Right bottom
+	if (LID.x == LSIZE.x - 2 && LID.y == LSIZE.y - 2)
+	{
+		if (GID.x == width - 1 || GID.y == height - 2)
+		{
+			tile[TILE_Y + 1][TILE_X + 1] = 0.f;
+		}
+		else
+		{
+			tile[TILE_Y + 1][TILE_X + 1] = d_pos[(GID.y + 2) * width + GID.x + 2];
+		}
+	}
+
+
+
+	tile[LID.y + 1][LID.x + 1] = d_pos[(GID.y) * width + GID.x];
+
+
+	barrier(CLK_LOCAL_MEM_FENCE);
 
 
 
@@ -487,10 +621,159 @@ __kernel void IntegrateRain(unsigned int width,
 	if (get_global_id(0) >= width || get_global_id(1) >= height)
 		return;
 
-	unsigned int particleID = get_global_id(0) + get_global_id(1) * width;
+
 	int2 GID;
 	GID.x = get_global_id(0);
 	GID.y = get_global_id(1);
+
+	int2 LID;
+	LID.x = get_local_id(0);
+	LID.y = get_local_id(1);
+
+	int2 LSIZE;
+	LSIZE.x = get_local_size(0);
+	LSIZE.y = get_local_size(1);
+
+
+
+
+
+	__local float4 tile[TILE_Y + HALOSIZE][TILE_X + HALOSIZE];
+
+
+
+	// Top side halo
+	if (LID.y == 0)
+	{
+		if (GID.y == 0)
+		{
+			tile[0][LID.x + 1] = 0.f;
+		}
+		else
+		{
+			tile[0][LID.x + 1] = d_pos[(GID.y - 1) * width + GID.x];
+		}
+	}
+
+	// Down side halo
+	if (LID.y == LSIZE.y - 1)
+	{
+		if (GID.y == height - 1)
+		{
+			tile[TILE_Y + 1][LID.x + 1] = 0.f;
+		}
+		else
+		{
+			tile[TILE_Y + 1][LID.x + 1] = d_pos[(GID.y + 1) * width + GID.x];
+		}
+	}
+
+	// Left side halo
+	if (LID.x == 0)
+	{
+		if (GID.x == 0)
+		{
+			tile[LID.y + 1][0] = 0.f;
+		}
+		else
+		{
+			tile[LID.y + 1][0] = d_pos[(GID.y) * width + GID.x - 1];
+		}
+	}
+
+	// Right side halo
+	if (LID.x == LSIZE.x - 1)
+	{
+		if (GID.x == width - 1)
+		{
+			tile[LID.y + 1][TILE_X + 1] = 0.f;
+		}
+		else
+		{
+			tile[LID.y + 1][TILE_X + 1] = d_pos[(GID.y) * width + GID.x + 1];
+		}
+	}
+
+
+
+
+	// Corners
+
+	// Left top
+	if (LID.x == 1 && LID.y == 1)
+	{
+		if (GID.x == 1 || GID.y == 1)
+		{
+			tile[0][0] = 0.f;
+		}
+		else
+		{
+			tile[0][0] = d_pos[(GID.y - 2) * width + GID.x - 2];
+		}
+	}
+
+	// Right top
+	if (LID.x == LSIZE.x - 2 && LID.y == 1)
+	{
+		if (GID.x == width - 2 || GID.y == 1)
+		{
+			tile[0][TILE_X + 1] = 0.f;
+		}
+		else
+		{
+			tile[0][TILE_X + 1] = d_pos[(GID.y - 2) * width + GID.x + 2];
+		}
+	}
+
+	// Left bottom
+	if (LID.x == 1 && LID.y == LSIZE.y - 2)
+	{
+		if (GID.x == 1 || GID.y == height - 2)
+		{
+			tile[TILE_Y + 1][0] = 0.f;
+		}
+		else
+		{
+			tile[TILE_Y + 1][0] = d_pos[(GID.y + 2) * width + GID.x - 2];
+		}
+	}
+
+	// Right bottom
+	if (LID.x == LSIZE.x - 2 && LID.y == LSIZE.y - 2)
+	{
+		if (GID.x == width - 1 || GID.y == height - 2)
+		{
+			tile[TILE_Y + 1][TILE_X + 1] = 0.f;
+		}
+		else
+		{
+			tile[TILE_Y + 1][TILE_X + 1] = d_pos[(GID.y + 2) * width + GID.x + 2];
+		}
+	}
+
+
+
+	tile[LID.y + 1][LID.x + 1] = d_pos[(GID.y) * width + GID.x];
+
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	unsigned int particleID = get_global_id(0) + get_global_id(1) * width;
 
 
 	uint random = (randomSeedX * GID.x * 301267 + randomSeedY * GID.y * 2013) % 32767;
@@ -500,16 +783,16 @@ __kernel void IntegrateRain(unsigned int width,
 
 	if (GID.x > 0 && GID.x < width - 1 && GID.y > 0 && GID.y < height - 1)
 	{
-		float4 self = d_pos[GID.x + GID.y * width];
-		float4 left = d_pos[GID.x - 1 + GID.y * width];
-		float4 right = d_pos[GID.x + 1 + GID.y * width];
-		float4 up = d_pos[GID.x + (GID.y + 1) * width];
-		float4 down = d_pos[GID.x + (GID.y - 1) * width];
+		float4 self = tile[LID.y + 1][LID.x + 1];
+		float4 left = tile[LID.y + 1][LID.x];
+		float4 right = tile[LID.y + 1][LID.x + 2];
+		float4 up = tile[LID.y + 2][LID.x + 1];
+		float4 down = tile[LID.y][LID.x + 1];
 
 
 		float4 normal = (float4)(left.y - right.y, Abso(self.x - left.x), down.y - up.y, 0.f);
 
-		if (randF < RainProb(d_pos[particleID], normal))
+		if (randF < RainProb(self, normal))
 		{
 			d_rain[particleID] = d_rain[particleID] + RAIN_LIFETIME;
 		}
@@ -568,9 +851,6 @@ float SatisfyContConstraint(float4 pos0,
 // d_posOut - new positions must be written here
 ///////////////////////////////////////////////////////////////////////////////
 
-#define TILE_X 16 
-#define TILE_Y 16
-#define HALOSIZE 2
 
 __kernel __attribute__((reqd_work_group_size(TILE_X, TILE_Y, 1)))
 __kernel void SatisfyConstraints(unsigned int width,
@@ -951,121 +1231,30 @@ __kernel void SatisfyConstraints(unsigned int width,
 	// This is just to keep every 8th particle of the first row attached to the bar
     
 
-
-
-
 		float corVecSum = 0.f;
-
-		//uint partID = GID.y * width + GID.x;
-		
-		/*if (GID.y >= 1)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2], restDistance) * WEIGHT_ORTHO;
-		}
-		if (GID.y <= height - 2)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2], restDistance) * WEIGHT_ORTHO;
-		}
-		if (GID.x >= 1)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 - 1], restDistance) * WEIGHT_ORTHO;
-		}
-		if (GID.x <= width - 2)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 + 1], restDistance) * WEIGHT_ORTHO;
-		}
-		
-		
-
-		
-
-		if (GID.y >= 1 && GID.x >= 1)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2 - 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
-		}
-		if (GID.y <= height - 2 && GID.x >= 1)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2 - 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
-		}
-		if (GID.x <= width - 2 && GID.y >= 1)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2 + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
-		}
-		if (GID.x <= width - 2 && GID.y <= height - 2)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2 + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
-		}*/
-
 
 		
 		if (GID.y >= 2 && GID.y <= height - 3)
 		{
 			corVecSum += SatisfyContConstraint(tile[LID.y + 2 - 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2]) * WEIGHT_SMOOTH_ORTO;
-			//corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 2][LID.x + 2], restDistance * 2) * WEIGHT_ORTHO_2;
 		}
 		if (GID.x >= 2 && GID.x <= height - 3)
 		{
 			corVecSum += SatisfyContConstraint(tile[LID.y + 2][LID.x + 2 - 2], tile[LID.y + 2][LID.x + 2 - 1], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 + 1], tile[LID.y + 2][LID.x + 2 + 2]) * WEIGHT_SMOOTH_ORTO;
 		}
-		/*if (GID.y <= height - 3)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2], restDistance * 2) * WEIGHT_ORTHO_2;
-		}
-		if (GID.x >= 2)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 - 2], restDistance * 2) * WEIGHT_ORTHO_2;
-		}
-		if (GID.x <= width - 3)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 + 2], restDistance * 2) * WEIGHT_ORTHO_2;
-		}*/
 
+		if (GID.y >= 2 && GID.x >= 2 && GID.y <= height - 3 && GID.x <= height - 3)
+		{
+			corVecSum += SatisfyContConstraint(tile[LID.y + 2 - 2][LID.x + 2 - 2], tile[LID.y + 2 - 1][LID.x + 2 - 1], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2 + 1], tile[LID.y + 2 + 2][LID.x + 2 + 2]) * WEIGHT_SMOOTH_DIAG;
+			corVecSum += SatisfyContConstraint(tile[LID.y + 2 + 2][LID.x + 2 - 2], tile[LID.y + 2 + 1][LID.x + 2 - 1], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2 + 1], tile[LID.y + 2 - 2][LID.x + 2 + 2]) * WEIGHT_SMOOTH_DIAG;
+		}
 		
-		/*
-		if (GID.y >= 2 && GID.x >= 2)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 2][LID.x + 2 - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
-		}
-		if (GID.y <= height - 3 && GID.x >= 2)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2 - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
-		}
-		if (GID.x <= width - 3 && GID.y >= 2)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 2][LID.x + 2 + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
-		}
-		if (GID.x <= width - 3 && GID.y <= height - 3)
-		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2 + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
-		}*/
-		
-
-		//corVecSum.w = 0.f;
-
-
-
-
-
-
-
-
-		/*if (length(corVecSum) > (restDistance / 2.f))
-		{
-			corVecSum = normalize(corVecSum) * (restDistance / 2.f);
-		}
-
-		d_posOut[partID] = tile[LID.y + 2][LID.x + 2] + corVecSum;*/
 
 		tile[LID.y + 2][LID.x + 2].y += corVecSum;
 		d_posOut[partID] = tile[LID.y + 2][LID.x + 2];
 
 
 	
-	/*else
-	{
-		d_posOut[partID] = tile[LID.y + 2][LID.x + 2];
-	}*/
-
 
 
 
@@ -1077,47 +1266,6 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-// Input data:
-// width and height - the dimensions of the particle grid
-// d_pos            - the input positions
-// spherePos        - The position of the sphere (xyz)
-// sphereRad        - The radius of the sphere
-//
-// Output data:
-// d_pos            - The updated positions
-///////////////////////////////////////////////////////////////////////////////
-__kernel void CheckCollisions(unsigned int width,
-								unsigned int height, 
-								__global float4* d_pos,
-								float4 spherePos,
-								float sphereRad){
-								
-
-	// ADD YOUR CODE HERE!
-	// Find whether the particle is inside the sphere.
-	// If so, push it outside.
-	
-    if(get_global_id(0) >= width || get_global_id(1) >= height)
-		return;
-
-		
-	unsigned int partID = get_global_id(0) + get_global_id(1) * width;
-	// This is just to keep every 8th particle of the first row attached to the bar
-    if(partID > width-1 || ( partID & ( 7 )) != 0)
-	{
-		float4 posss = d_pos[partID];
-		spherePos.w = 0.f;
-		float4 vecToMid = posss - spherePos;
-		float len = length(vecToMid);
-		if (len < sphereRad)
-		{
-			d_pos[partID] = posss + normalize(vecToMid) * (sphereRad - len) * 0.5f;
-		}
-	}
-
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // There is no need to change this function!
