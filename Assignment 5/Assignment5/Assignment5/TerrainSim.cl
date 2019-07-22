@@ -423,10 +423,10 @@ __kernel void InitHeightfield(unsigned int width,
 		else
 		{
 			tileSlopes[TILE_Y + 1][LID.x + 1] = (float4)
-				(d_pos[(GID.x - 1) + width * (GID.y + 1)].y - d_pos[particleID].y,
-					);
-			tile[TILE_Y + 1][LID.x + 1] = d_pos[(GID.y + 1) * width + GID.x];
-			tileRain[TILE_Y + 1][LID.x + 1] = d_rain[(GID.y + 1) * width + GID.x];
+				(0.f,//tile[TILE_Y + 1][LID.x + 1].y - tile[TILE_Y + 1][LID.x + 0].y,
+					inverseTan((tile[TILE_Y + 1][LID.x + 1].y - tile[TILE_Y + 0][LID.x + 0].y) * SLOPE_FACTOR),
+					inverseTan((tile[TILE_Y + 1][LID.x + 1].y - tile[TILE_Y + 0][LID.x + 1].y) * SLOPE_FACTOR),
+					inverseTan((tile[TILE_Y + 1][LID.x + 1].y - tile[TILE_Y + 0][LID.x + 2].y) * SLOPE_FACTOR));
 		}
 	}
 
@@ -435,13 +435,15 @@ __kernel void InitHeightfield(unsigned int width,
 	{
 		if (GID.x == 0)
 		{
-			tile[LID.y + 1][0] = 0.f;
-			tileRain[LID.y + 1][0] = 0;
+			tileSlopes[LID.y + 1][0] = (float4)(0.f, 0.f, 0.f, 0.f);
 		}
 		else
 		{
-			tile[LID.y + 1][0] = d_pos[(GID.y) * width + GID.x - 1];
-			tileRain[LID.y + 1][0] = d_rain[(GID.y) * width + GID.x - 1];
+			tileSlopes[LID.y + 1][0] = (float4)
+				(0.f,
+					0.f,
+					0.f,
+					inverseTan((tile[LID.y + 1][0].y - tile[LID.y + 0][1].y) * SLOPE_FACTOR));
 		}
 	}
 
@@ -450,13 +452,15 @@ __kernel void InitHeightfield(unsigned int width,
 	{
 		if (GID.x == width - 1)
 		{
-			tile[LID.y + 1][TILE_X + 1] = 0.f;
-			tileRain[LID.y + 1][TILE_X + 1] = 0;
+			tileSlopes[LID.y + 1][TILE_X + 1] = (float4)(0.f, 0.f, 0.f, 0.f);
 		}
 		else
 		{
-			tile[LID.y + 1][TILE_X + 1] = d_pos[(GID.y) * width + GID.x + 1];
-			tileRain[LID.y + 1][TILE_X + 1] = d_rain[(GID.y) * width + GID.x + 1];
+			tileSlopes[LID.y + 1][TILE_X + 1] = (float4)
+				(inverseTan((tile[LID.y + 1][TILE_X + 1].y - tile[LID.y + 1][TILE_X + 0].y) * SLOPE_FACTOR),
+					inverseTan((tile[LID.y + 1][TILE_X + 1].y - tile[LID.y + 0][TILE_X + 0].y) * SLOPE_FACTOR),
+					0.f,
+					0.f);
 		}
 	}
 
@@ -466,7 +470,7 @@ __kernel void InitHeightfield(unsigned int width,
 	// Corners
 
 	// Left top
-	if (LID.x == 1 && LID.y == 1)
+	/*if (LID.x == 1 && LID.y == 1)
 	{
 		if (GID.x == 1 || GID.y == 1)
 		{
@@ -478,11 +482,11 @@ __kernel void InitHeightfield(unsigned int width,
 			tile[0][0] = d_pos[(GID.y - 2) * width + GID.x - 2];
 			tileRain[0][0] = d_rain[(GID.y - 2) * width + GID.x - 2];
 		}
-	}
+	}*/
 
 	// Right top
 	if (LID.x == LSIZE.x - 2 && LID.y == 1)
-	{
+	/*{
 		if (GID.x == width - 2 || GID.y == 1)
 		{
 			tile[0][TILE_X + 1] = 0.f;
@@ -493,20 +497,22 @@ __kernel void InitHeightfield(unsigned int width,
 			tile[0][TILE_X + 1] = d_pos[(GID.y - 2) * width + GID.x + 2];
 			tileRain[0][TILE_X + 1] = d_rain[(GID.y - 2) * width + GID.x + 2];
 		}
-	}
+	}*/
 
 	// Left bottom
 	if (LID.x == 1 && LID.y == LSIZE.y - 2)
 	{
 		if (GID.x == 1 || GID.y == height - 2)
 		{
-			tile[TILE_Y + 1][0] = 0.f;
-			tileRain[TILE_Y + 1][0] = 0;
+			tileSlopes[TILE_Y + 1][0] = (float4)(0.f, 0.f, 0.f, 0.f);
 		}
 		else
 		{
-			tile[TILE_Y + 1][0] = d_pos[(GID.y + 2) * width + GID.x - 2];
-			tileRain[TILE_Y + 1][0] = d_rain[(GID.y + 2) * width + GID.x - 2];
+			tileSlopes[TILE_Y + 1][0] = (float4)
+				(0.f,
+					0.f,
+					0.f,
+					inverseTan((tile[TILE_Y + 1][0].y - tile[TILE_Y + 0][1].y) * SLOPE_FACTOR));
 		}
 	}
 
@@ -515,20 +521,25 @@ __kernel void InitHeightfield(unsigned int width,
 	{
 		if (GID.x == width - 1 || GID.y == height - 2)
 		{
-			tile[TILE_Y + 1][TILE_X + 1] = 0.f;
-			tileRain[TILE_Y + 1][TILE_X + 1] = 0;
+			tileSlopes[TILE_Y + 1][TILE_X + 1] = (float4)(0.f, 0.f, 0.f, 0.f);
 		}
 		else
 		{
-			tile[TILE_Y + 1][TILE_X + 1] = d_pos[(GID.y + 2) * width + GID.x + 2];
-			tileRain[TILE_Y + 1][TILE_X + 1] = d_rain[(GID.y + 2) * width + GID.x + 2];
+			tileSlopes[TILE_Y + 1][TILE_X + 1] = (float4)
+				(0.f,
+					inverseTan((tile[TILE_Y + 1][TILE_X + 1].y - tile[TILE_Y + 0][TILE_X + 0].y) * SLOPE_FACTOR),
+					0.f,
+					0.f);
 		}
 	}
 
 
 
-	tile[LID.y + 1][LID.x + 1] = d_pos[(GID.y) * width + GID.x];
-	tileRain[LID.y + 1][LID.x + 1] = d_rain[(GID.y) * width + GID.x];
+	tileSlopes[LID.y + 1][LID.x + 1] = (float4)
+		(inverseTan( (tile[LID.y + 1][LID.x + 1].y - tile[LID.y + 1][LID.x + 0].y) * SLOPE_FACTOR),
+		inverseTan( (tile[LID.y + 1][LID.x + 1].y - tile[LID.y + 0][LID.x + 0].y) * SLOPE_FACTOR),
+		inverseTan( (tile[LID.y + 1][LID.x + 1].y - tile[LID.y + 0][LID.x + 1].y) * SLOPE_FACTOR),
+		inverseTan( (tile[LID.y + 1][LID.x + 1].y - tile[LID.y + 0][LID.x + 2].y) * SLOPE_FACTOR));
 
 
 
@@ -540,7 +551,7 @@ __kernel void InitHeightfield(unsigned int width,
 	// Slope Halo
 
 
-	if (LID.x)
+	//if (LID.x)
 
 
 	float	slope0,
@@ -602,18 +613,19 @@ __kernel void InitHeightfield(unsigned int width,
 		resultRain = 0;
 		if (rainHere != 0)
 		{
-			//atomic_add(d_rain + particleID, -rainHere);
+
 		}
 	}
 	else
 	{
 		resultRain = rainHere - RAIN_ABSORBATION;
-		//atomic_add(d_rain + particleID, -RAIN_ABSORBATION);
 	}
 
-	//atomic_add(d_rain + particleID, (-(rainHere) + (resultRain / 2)));
 	atomic_add(d_rain + particleID, -(rainHere));
 
+
+	// Remove own rain
+	tileRain[LID.y][LID.x] = 0;
 
 
 
@@ -621,14 +633,34 @@ __kernel void InitHeightfield(unsigned int width,
 
 	//randF = 0.0f;
 
-	slope0 = slope0 > 99990.f ? 0.f : inverseTan(-slope0 * SLOPE_FACTOR) + PI_HALF;
+
+	slope0 = -tileSlopes[LID.y + 1][LID.x + 2].x + PI_HALF;
+	slope1 = -tileSlopes[LID.y + 2][LID.x + 2].y + PI_HALF;
+	slope2 = -tileSlopes[LID.y + 2][LID.x + 1].z + PI_HALF;
+	slope3 = -tileSlopes[LID.y + 2][LID.x + 0].w + PI_HALF;
+	slope4 = tileSlopes[LID.y + 1][LID.x + 1].x + PI_HALF;
+	slope5 = tileSlopes[LID.y + 1][LID.x + 1].y + PI_HALF;
+	slope6 = tileSlopes[LID.y + 1][LID.x + 1].z + PI_HALF;
+	slope7 = tileSlopes[LID.y + 1][LID.x + 1].w + PI_HALF;
+
+	/*slope0 = inverseTan(slope0 * SLOPE_FACTOR) + PI_HALF;
+	slope1 = inverseTan(slope1 * SLOPE_FACTOR) + PI_HALF;
+	slope2 = inverseTan(slope2 * SLOPE_FACTOR) + PI_HALF;
+	slope3 = inverseTan(slope3 * SLOPE_FACTOR) + PI_HALF;
+	slope4 = inverseTan(slope4 * SLOPE_FACTOR) + PI_HALF;
+	slope5 = inverseTan(slope5 * SLOPE_FACTOR) + PI_HALF;
+	slope6 = inverseTan(slope6 * SLOPE_FACTOR) + PI_HALF;
+	slope7 = inverseTan(slope7 * SLOPE_FACTOR) + PI_HALF;*/
+
+	
+	/*slope0 = slope0 > 99990.f ? 0.f : inverseTan(-slope0 * SLOPE_FACTOR) + PI_HALF;
 	slope1 = slope1 > 99990.f ? 0.f : inverseTan(-slope1 * SLOPE_FACTOR) + PI_HALF;
 	slope2 = slope2 > 99990.f ? 0.f : inverseTan(-slope2 * SLOPE_FACTOR) + PI_HALF;
 	slope3 = slope3 > 99990.f ? 0.f : inverseTan(-slope3 * SLOPE_FACTOR) + PI_HALF;
 	slope4 = slope4 > 99990.f ? 0.f : inverseTan(-slope4 * SLOPE_FACTOR) + PI_HALF;
 	slope5 = slope5 > 99990.f ? 0.f : inverseTan(-slope5 * SLOPE_FACTOR) + PI_HALF;
 	slope6 = slope6 > 99990.f ? 0.f : inverseTan(-slope6 * SLOPE_FACTOR) + PI_HALF;
-	slope7 = slope7 > 99990.f ? 0.f : inverseTan(-slope7 * SLOPE_FACTOR) + PI_HALF;
+	slope7 = slope7 > 99990.f ? 0.f : inverseTan(-slope7 * SLOPE_FACTOR) + PI_HALF;*/
 
 
 	float sumSlopes = slope0
