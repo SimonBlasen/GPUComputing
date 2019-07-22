@@ -155,7 +155,7 @@ __kernel void InitHeightfield(unsigned int width,
 	float4 x0 = d_pos[particleID];
 
 	//x0.y = x0.y + sin(x0.x * 20.f + x0.z * 26.f) * 0.06f + cos(x0.x * 23.f + x0.z * 16.f) * 0.06f;
-	x0.y = perlin2d(GID.x, GID.y, 0.1f, 1.f, seed) * 0.1f;
+	x0.y = perlin2d(GID.x, GID.y, 0.01f, 1.f, seed) * 0.3f;
 
 	d_pos[particleID] = x0;
 
@@ -166,10 +166,14 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 
-#define RAIN_IMPACT 0.01f
+#define RAIN_IMPACT 0.001f
 #define RAIN_ABSORBATION 1
 #define DELTA_T 0.7f
-#define SLOPE_FACTOR 1.f
+#define SLOPE_FACTOR 10000.f
+//#define SMOOTH_STEP 0.01f
+#define WEIGHT_SMOOTH_DIAG 0.02f
+#define WEIGHT_SMOOTH_ORTO 0.02f
+
 
 
 
@@ -193,6 +197,7 @@ __kernel void InitHeightfield(unsigned int width,
 						__global float4* d_pos,
 						__global float4* d_prevPos,
 						__global unsigned int* d_rain,
+						__global unsigned int* d_newRain,
 						float elapsedTime,
 						float prevElapsedTime,
 						float simulationTime,
@@ -213,6 +218,12 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 	unsigned int particleID = get_global_id(0) + get_global_id(1) * width;
+
+	if (d_newRain[particleID] > 0)
+	{
+		unsigned int valNewRain = d_newRain[particleID];
+		atomic_add(d_rain + particleID, valNewRain);
+	}
 
 	unsigned int rainHere = d_rain[particleID];
 
@@ -288,7 +299,8 @@ __kernel void InitHeightfield(unsigned int width,
 		//atomic_add(d_rain + particleID, -RAIN_ABSORBATION);
 	}
 
-	atomic_add(d_rain + particleID, (-(rainHere) + (resultRain / 2)));
+	//atomic_add(d_rain + particleID, (-(rainHere) + (resultRain / 2)));
+	atomic_add(d_rain + particleID, -(rainHere));
 
 
 
@@ -353,7 +365,7 @@ __kernel void InitHeightfield(unsigned int width,
 
 	//moveDir = 1;
 
-	resultRain = resultRain / 2;
+	//resultRain = resultRain / 2;
 	
 	if (moveDir == 0)
 	{
@@ -463,6 +475,22 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 
+__kernel void IntegrateRain(unsigned int width,
+	unsigned int height,
+	__global float4* d_pos,
+	__global float4* d_prevPos,
+	__global unsigned int* d_rain,
+	__global unsigned int* d_newRain,
+	float elapsedTime,
+	float prevElapsedTime,
+	float simulationTime,
+	unsigned int randomSeedX,
+	unsigned int randomSeedY)
+{
+
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Input data:
 // pos1 and pos2 - The positions of two particles
@@ -477,6 +505,29 @@ __kernel void InitHeightfield(unsigned int width,
 	float4 toNeighbor = pos2 - pos1;
 	return (toNeighbor - normalize(toNeighbor) * restDistance);
 }
+
+
+
+float SatisfyContConstraint(float4 pos0,
+	  float4 pos1,
+	  float4 pos2,
+	  float4 pos3,
+	  float4 pos4)
+{
+	float hD0 = pos1.y - pos0.y;
+	float hD1 = pos2.y - pos1.y;
+	float hD2 = pos3.y - pos2.y;
+	float hD3 = pos4.y - pos3.y;
+
+	float an0 = hD1 - hD0;
+	float an1 = hD2 - hD1;
+	float an2 = hD3 - hD2;
+
+	float mid = (an0 + an2) * 0.5f;
+
+	return an1 - mid;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Input data:
@@ -502,19 +553,6 @@ __kernel void SatisfyConstraints(unsigned int width,
     if(get_global_id(0) >= width || get_global_id(1) >= height)
 		return;
 
-
-	// ADD YOUR CODE HERE!
-	// Satisfy all the constraints (structural, shear, and bend).
-	// You can use weights defined at the beginning of this file.
-
-	// A ping-pong scheme is needed here, so read the values from d_posIn and store the results in d_posOut
-
-	// Hint: you should use the SatisfyConstraint helper function in the following manner:
-	//SatisfyConstraint(pos, neighborpos, restDistance) * WEIGHT_XXX
-
-	
-	
-	
 
 	
 	int2 GID;
@@ -882,16 +920,16 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 	unsigned int partID = get_global_id(0) + get_global_id(1) * width;
 	// This is just to keep every 8th particle of the first row attached to the bar
-    if(partID > width-1 || ( partID & ( 7 )) != 0){
+    
 
 
 
 
-		float4 corVecSum = (float4)(0.f, 0.f, 0.f, 0.f);
+		float corVecSum = 0.f;
 
 		//uint partID = GID.y * width + GID.x;
 		
-		if (GID.y >= 1)
+		/*if (GID.y >= 1)
 		{
 			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2], restDistance) * WEIGHT_ORTHO;
 		}
@@ -927,15 +965,20 @@ __kernel void SatisfyConstraints(unsigned int width,
 		if (GID.x <= width - 2 && GID.y <= height - 2)
 		{
 			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2 + 1], restDistance * ROOT_OF_2) * WEIGHT_DIAG;
-		}
+		}*/
 
 
 		
-		if (GID.y >= 2)
+		if (GID.y >= 2 && GID.y <= height - 3)
 		{
-			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 2][LID.x + 2], restDistance * 2) * WEIGHT_ORTHO_2;
+			corVecSum += SatisfyContConstraint(tile[LID.y + 2 - 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2]) * WEIGHT_SMOOTH_ORTO;
+			//corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 2][LID.x + 2], restDistance * 2) * WEIGHT_ORTHO_2;
 		}
-		if (GID.y <= height - 3)
+		if (GID.x >= 2 && GID.x <= height - 3)
+		{
+			corVecSum += SatisfyContConstraint(tile[LID.y + 2][LID.x + 2 - 2], tile[LID.y + 2][LID.x + 2 - 1], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 + 1], tile[LID.y + 2][LID.x + 2 + 2]) * WEIGHT_SMOOTH_ORTO;
+		}
+		/*if (GID.y <= height - 3)
 		{
 			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2], restDistance * 2) * WEIGHT_ORTHO_2;
 		}
@@ -946,10 +989,10 @@ __kernel void SatisfyConstraints(unsigned int width,
 		if (GID.x <= width - 3)
 		{
 			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 + 2], restDistance * 2) * WEIGHT_ORTHO_2;
-		}
+		}*/
 
 		
-
+		/*
 		if (GID.y >= 2 && GID.x >= 2)
 		{
 			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 2][LID.x + 2 - 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
@@ -965,10 +1008,10 @@ __kernel void SatisfyConstraints(unsigned int width,
 		if (GID.x <= width - 3 && GID.y <= height - 3)
 		{
 			corVecSum += SatisfyConstraint(tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2 + 2], restDistance * DOUBLE_ROOT_OF_2) * WEIGHT_DIAG_2;
-		}
+		}*/
 		
 
-		corVecSum.w = 0.f;
+		//corVecSum.w = 0.f;
 
 
 
@@ -977,19 +1020,22 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 
 
-		if (length(corVecSum) > (restDistance / 2.f))
+		/*if (length(corVecSum) > (restDistance / 2.f))
 		{
 			corVecSum = normalize(corVecSum) * (restDistance / 2.f);
 		}
 
-		d_posOut[partID] = tile[LID.y + 2][LID.x + 2] + corVecSum;
+		d_posOut[partID] = tile[LID.y + 2][LID.x + 2] + corVecSum;*/
+
+		tile[LID.y + 2][LID.x + 2].y += corVecSum;
+		d_posOut[partID] = tile[LID.y + 2][LID.x + 2];
 
 
-	}
-	else
+	
+	/*else
 	{
 		d_posOut[partID] = tile[LID.y + 2][LID.x + 2];
-	}
+	}*/
 
 
 

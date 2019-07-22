@@ -59,7 +59,7 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 		w:	scale
 	*/
 	m_rainSpots = new hlsl::float4[m_n_rainSpots];
-	m_rainSpots[0] = hlsl::float4(m_TerrainResX * 0.5f, m_TerrainResY * 0.5f, 15.f, 1010.f);
+	m_rainSpots[0] = hlsl::float4(m_TerrainResX * 0.5f, m_TerrainResY * 0.5f, 15.f, 110.f);
 
 	// Fit every distribution to be max 1
 	for (int i = 0; i < m_n_rainSpots; i++)
@@ -69,6 +69,7 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 
 
 	m_hRainArray = new unsigned int[m_TerrainResX * m_TerrainResY];
+	m_hRainArrayNew = new unsigned int[m_TerrainResX * m_TerrainResY];
 
 	for (int x = 0; x < m_TerrainResX; x++)
 	{
@@ -79,7 +80,7 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 			{
 				gauss += Gauss2D(x, y, m_rainSpots[i].x, m_rainSpots[i].y, m_rainSpots[i].z) * m_rainSpots[i].w;
 			}
-			m_hRainArray[x + y * m_TerrainResX] = static_cast<unsigned int>(gauss);
+			m_hRainArray[x + y * m_TerrainResX] = 0.f;// static_cast<unsigned int>(gauss);
 		}
 	}
 
@@ -140,8 +141,8 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	}*/
 
 
-	//m_pSphere = gluNewQuadric();
-	//gluQuadricNormals(m_pSphere, GLU_SMOOTH);
+	m_pSphere = gluNewQuadric();
+	gluQuadricNormals(m_pSphere, GLU_SMOOTH);
 
 	///////////////////////////////////////////////////////////
 	// shader programs
@@ -207,6 +208,9 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	m_clRainArray = clCreateBuffer(Context, CL_MEM_READ_WRITE, m_TerrainResX * m_TerrainResY * sizeof(cl_uint), 0, &clError2);
 	clError |= clError2;
 
+	m_clNewRainArray = clCreateBuffer(Context, CL_MEM_READ_WRITE, m_TerrainResX * m_TerrainResY * sizeof(cl_uint), 0, &clError2);
+	clError |= clError2;
+
 	V_RETURN_FALSE_CL(clError, "Error allocating device arrays.");
 
 	string programCode;
@@ -222,6 +226,8 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 
 	m_IntegrateKernel = clCreateKernel(m_TerrainSimProgram, "Integrate", &clError);
 	V_RETURN_FALSE_CL(clError, "Failed to create Integrate kernel.");
+	m_IntegrateRainKernel = clCreateKernel(m_TerrainSimProgram, "IntegrateRain", &clError);
+	V_RETURN_FALSE_CL(clError, "Failed to create IntegrateRain kernel.");
 	m_NormalKernel = clCreateKernel(m_TerrainSimProgram, "ComputeNormals", &clError);
 	V_RETURN_FALSE_CL(clError, "Failed to create Normal kernel.");
 	m_ConstraintKernel = clCreateKernel(m_TerrainSimProgram, "SatisfyConstraints", &clError);
@@ -251,6 +257,15 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	clError |= clSetKernelArg(m_IntegrateKernel, 2, sizeof(cl_mem), (void*) &m_clPosArray);
 	clError |= clSetKernelArg(m_IntegrateKernel, 3, sizeof(cl_mem), (void*) &m_clPosArrayOld);
 	clError |= clSetKernelArg(m_IntegrateKernel, 4, sizeof(cl_mem), (void*)& m_clRainArray);
+	clError |= clSetKernelArg(m_IntegrateKernel, 5, sizeof(cl_mem), (void*)& m_clNewRainArray);
+	V_RETURN_FALSE_CL(clError, "Failed to set integration kernel params");
+
+	clError = clSetKernelArg(m_IntegrateRainKernel, 0, sizeof(unsigned int), &m_TerrainResX);
+	clError |= clSetKernelArg(m_IntegrateRainKernel, 1, sizeof(unsigned int), &m_TerrainResY);
+	clError |= clSetKernelArg(m_IntegrateRainKernel, 2, sizeof(cl_mem), (void*)& m_clPosArray);
+	clError |= clSetKernelArg(m_IntegrateRainKernel, 3, sizeof(cl_mem), (void*)& m_clPosArrayOld);
+	clError |= clSetKernelArg(m_IntegrateRainKernel, 4, sizeof(cl_mem), (void*)& m_clRainArray);
+	clError |= clSetKernelArg(m_IntegrateRainKernel, 5, sizeof(cl_mem), (void*)& m_clNewRainArray);
 	V_RETURN_FALSE_CL(clError, "Failed to set integration kernel params");
 
 	clError  = clSetKernelArg(m_ConstraintKernel, 0, sizeof(unsigned int), &m_TerrainResX);
@@ -309,6 +324,7 @@ void CRainSimulation::ReleaseResources()
 	SAFE_RELEASE_MEMOBJECT(m_clNormalArray);
 	SAFE_RELEASE_MEMOBJECT(m_clPosArray);
 	SAFE_RELEASE_MEMOBJECT(m_clRainArray);
+	SAFE_RELEASE_MEMOBJECT(m_clNewRainArray);
 
 	SAFE_RELEASE_KERNEL(m_IntegrateKernel);
 	SAFE_RELEASE_KERNEL(m_NormalKernel);
@@ -355,7 +371,7 @@ void CRainSimulation::ComputeGPU(cl_context , cl_command_queue CommandQueue, siz
 	{
 		m_firstRun = false;
 
-		V_RETURN_CL(clEnqueueWriteBuffer(CommandQueue, m_clRainArray, CL_FALSE, 0, m_TerrainResX * m_TerrainResY * sizeof(cl_uint), m_hRainArray, 0, NULL, NULL), "Error copying data from host to device!");
+		V_RETURN_CL(clEnqueueWriteBuffer(CommandQueue, m_clNewRainArray, CL_FALSE, 0, m_TerrainResX * m_TerrainResY * sizeof(cl_uint), m_hRainArray, 0, NULL, NULL), "Error copying data from host to device!");
 		clErr = clFinish(CommandQueue);
 
 		clErr = clEnqueueNDRangeKernel(CommandQueue, m_InitTerrainKernel, 2, 0, globalWorkSize, LocalWorkSize, 0, 0, 0);
@@ -365,6 +381,27 @@ void CRainSimulation::ComputeGPU(cl_context , cl_command_queue CommandQueue, siz
 		cout << "Inited Terrain" << endl;
 	}
 
+	if (m_copyRainArray)
+	{
+		m_copyRainArray = false;
+
+		V_RETURN_CL(clEnqueueReadBuffer(CommandQueue, m_clNewRainArray, CL_TRUE, 0, m_TerrainResX * m_TerrainResY * sizeof(cl_uint), m_hRainArray, 0, NULL, NULL), "Error reading data from device!");
+
+
+		for (int x = 0; x < m_TerrainResX; x++)
+		{
+			for (int y = 0; y < m_TerrainResY; y++)
+			{
+				m_hRainArray[x + y * m_TerrainResX] = m_hRainArray[x + y * m_TerrainResX] + m_hRainArrayNew[x + y * m_TerrainResX];
+			}
+		}
+
+
+
+
+		V_RETURN_CL(clEnqueueWriteBuffer(CommandQueue, m_clNewRainArray, CL_TRUE, 0, m_TerrainResX * m_TerrainResY * sizeof(cl_uint), m_hRainArray, 0, NULL, NULL), "Error copying data from host to device!");
+		clErr = clFinish(CommandQueue);
+	}
 
 
 
@@ -374,11 +411,11 @@ void CRainSimulation::ComputeGPU(cl_context , cl_command_queue CommandQueue, siz
 	//clErr |= clSetKernelArg(m_IntegrateKernel, 2, sizeof(cl_mem), (void*)& m_clPosArray);
 	//clErr |= clSetKernelArg(m_IntegrateKernel, 3, sizeof(cl_mem), (void*)& m_clPosArrayOld);
 	//clErr |= clSetKernelArg(m_IntegrateKernel, 4, sizeof(cl_mem), (void*)& m_clRainArray);
-	clErr = clSetKernelArg(m_IntegrateKernel, 5, sizeof(cl_float), (void*)& m_ElapsedTime);
-	clErr |= clSetKernelArg(m_IntegrateKernel, 6, sizeof(cl_float), (void*)& m_PrevElapsedTime);
-	clErr |= clSetKernelArg(m_IntegrateKernel, 7, sizeof(cl_float), (void*)& m_simulationTime);
-	clErr |= clSetKernelArg(m_IntegrateKernel, 8, sizeof(unsigned int), &randSeedX);
-	clErr |= clSetKernelArg(m_IntegrateKernel, 9, sizeof(unsigned int), &randSeedY);
+	clErr = clSetKernelArg(m_IntegrateKernel, 6, sizeof(cl_float), (void*)& m_ElapsedTime);
+	clErr |= clSetKernelArg(m_IntegrateKernel, 7, sizeof(cl_float), (void*)& m_PrevElapsedTime);
+	clErr |= clSetKernelArg(m_IntegrateKernel, 8, sizeof(cl_float), (void*)& m_simulationTime);
+	clErr |= clSetKernelArg(m_IntegrateKernel, 9, sizeof(unsigned int), &randSeedX);
+	clErr |= clSetKernelArg(m_IntegrateKernel, 10, sizeof(unsigned int), &randSeedY);
 	V_RETURN_CL(clErr, "Failed to set integration kernel params");
 
 
@@ -394,16 +431,14 @@ void CRainSimulation::ComputeGPU(cl_context , cl_command_queue CommandQueue, siz
 
 
 
-	/*
-	V_RETURN_CL(clEnqueueAcquireGLObjects(CommandQueue, 1, &m_clPosArray, 0, NULL, NULL),  "Error acquiring OpenGL vertex buffer.");
-	V_RETURN_CL(clEnqueueAcquireGLObjects(CommandQueue, 1, &m_clNormalArray, 0, NULL, NULL), "Error acquiring OpenGL normal buffer.");
+	
 	
 
 	// Check for collisions
 
 
 	// Constraint relaxation: use the ping-pong technique and perform the relaxation in several iterations
-	for (unsigned int i = 0; i < 2.0 * m_ClothResX; i++) {
+	for (unsigned int i = 0; i < 16; i++) {
 	//
 	//	 Execute the constraint relaxation kernel
 	//
@@ -422,14 +457,14 @@ void CRainSimulation::ComputeGPU(cl_context , cl_command_queue CommandQueue, siz
 		clErr = clEnqueueNDRangeKernel(CommandQueue, m_ConstraintKernel, 2, 0, globalWorkSize, LocalWorkSize, 0, 0, 0);
 		V_RETURN_CL(clErr, "Error executing m_ConstraintKernel");
 
-		if (i % 3 == 0)
+		/*if (i % 3 == 0)
 		{
 			clErr = clSetKernelArg(m_CollisionsKernel, 3, sizeof(hlsl::float4), &m_SpherePos);
 			clErr |= clSetKernelArg(m_CollisionsKernel, 4, sizeof(float), &m_SphereRadius);
 			V_RETURN_CL(clErr, "Failed to set m_CollisionsKernel params");
 			clErr = clEnqueueNDRangeKernel(CommandQueue, m_CollisionsKernel, 2, 0, globalWorkSize, LocalWorkSize, 0, 0, 0);
 			V_RETURN_CL(clErr, "Error executing m_CollisionsKernel");
-		}
+		}*/
 	//		 Occasionally check for collisions
 	//
 	//	 Swap the ping pong buffers
@@ -438,7 +473,7 @@ void CRainSimulation::ComputeGPU(cl_context , cl_command_queue CommandQueue, siz
 	// You can check for collisions here again, to make sure there is no intersection with the cloth in the end
 
 	
-	*/
+	
 
 
 
@@ -535,6 +570,43 @@ void CRainSimulation::OnKeyboard(int Key, int KeyAction)
 		{
 			m_InspectCloth = !m_InspectCloth;
 		}
+		if (Key == GLFW_KEY_R)
+		{
+
+			cout << "Raining" << endl;
+
+
+			m_rainSpots = new hlsl::float4[m_n_rainSpots];
+			m_rainSpots[0] = hlsl::float4(m_TerrainResX * (m_SpherePos.x + 0.5f), m_TerrainResY * (m_SpherePos.z + 0.5f), 64.f, 410.f);
+
+			// Fit every distribution to be max 1
+			for (int i = 0; i < m_n_rainSpots; i++)
+			{
+				m_rainSpots[i].w = (m_rainSpots[i].w) * (m_rainSpots[i].z * m_rainSpots[i].z * CL_M_PI * 2.f);
+			}
+
+
+			m_hRainArrayNew = new unsigned int[m_TerrainResX * m_TerrainResY];
+
+			for (int x = 0; x < m_TerrainResX; x++)
+			{
+				for (int y = 0; y < m_TerrainResY; y++)
+				{
+					float gauss = 0.f;
+					for (int i = 0; i < m_n_rainSpots; i++)
+					{
+						gauss += Gauss2D(x, y, m_rainSpots[i].x, m_rainSpots[i].y, m_rainSpots[i].z) * m_rainSpots[i].w;
+					}
+					m_hRainArrayNew[x + y * m_TerrainResX] = static_cast<unsigned int>(gauss);
+				}
+			}
+
+
+
+
+			m_copyRainArray = true;
+
+		}
 	}
 	else if (KeyAction == GLFW_RELEASE)
 	{
@@ -565,6 +637,8 @@ void CRainSimulation::OnMouseMove(int X, int Y)
 	if(m_Buttons & 4)
 	{
 		m_SpherePos.z += dy * 0.002f;
+		m_SpherePos.x += dx * 0.002f;
+		//cout << m_SpherePos.x << endl;
 	}
 	m_PrevX = X;
 	m_PrevY = Y;

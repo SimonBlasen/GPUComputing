@@ -19,8 +19,10 @@ void main()
 	surfColor = texture( texDiffuse, tex.xy );
 	if (rain >= 1.f)
 	{
-		surfColor = vec4(1.0, 0.0, 0.0, 1.0);
+		//surfColor = vec4(0.0, 0.0, 1.0, 1.0);
 	}
+
+	surfColor += vec4(0.0, 0.0, (-1.f / (rain * 0.01f + 1.f) + 1), 1.0);
 	
 	gl_FragColor = surfColor * cosTheta;
 }

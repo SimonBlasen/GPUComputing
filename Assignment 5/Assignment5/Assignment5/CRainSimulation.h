@@ -75,8 +75,8 @@ protected:
 	//CGLTexture*				m_pClothTexture = nullptr;
 	CGLTexture*				m_pTerrainTexture = nullptr;
 	GLUquadricObj*			m_pSphere = nullptr;
-	float					m_SphereRadius = 0.2f;
-	hlsl::float4			m_SpherePos = hlsl::float4(0.0f, 0.0f, 0.0f, 1.0f);
+	float					m_SphereRadius = 0.1f;
+	hlsl::float4			m_SpherePos = hlsl::float4(0.0f, 0.3f, 0.0f, 1.0f);
 
 	// OpenGL variables
 	GLhandleARB				m_VSCloth = 0;
@@ -93,15 +93,18 @@ protected:
 	cl_mem					m_clPosArray = nullptr; //current position of the particles (shared with OpenGL)
 	cl_mem					m_clPosArrayOld = nullptr;
 	cl_mem					m_clRainArray = nullptr;
+	cl_mem					m_clNewRainArray = nullptr;
 	cl_mem					m_clPosArrayAux = nullptr;
 	cl_mem					m_clNormalArray = nullptr;
 	unsigned int*			m_hRainArray;
+	unsigned int*			m_hRainArrayNew;
 	hlsl::float4*			m_rainSpots;
 	unsigned int			m_n_rainSpots;
 
 	cl_program				m_TerrainSimProgram = nullptr;
 	cl_kernel				m_NormalKernel = nullptr;
 	cl_kernel				m_IntegrateKernel = nullptr;
+	cl_kernel				m_IntegrateRainKernel = nullptr;
 	cl_kernel				m_ConstraintKernel = nullptr;
 	cl_kernel				m_CollisionsKernel = nullptr;
 
@@ -115,6 +118,7 @@ protected:
 	bool					m_InspectCloth = false;
 
 	bool					m_firstRun = true;
+	bool					m_copyRainArray = false;
 
 	// mouse
 	int						m_Buttons = 0;

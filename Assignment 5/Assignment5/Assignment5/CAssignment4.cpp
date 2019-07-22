@@ -51,7 +51,7 @@ CAssignment4::CAssignment4()
 	m_LocalWorkSize[0] = 16;
 	m_LocalWorkSize[1] = 16;
 	m_LocalWorkSize[2] = 1;
-	m_pCurrentTask = new CRainSimulation(128, 128);
+	m_pCurrentTask = new CRainSimulation(1024, 1024);
 
 
 
