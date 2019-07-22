@@ -229,7 +229,7 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 	__local float4 tile[TILE_Y + HALOSIZE][TILE_X + HALOSIZE];
-	__local float tileSlopes[TILE_Y + HALOSIZE][TILE_X + HALOSIZE];
+	__local float4 tileSlopes[TILE_Y + HALOSIZE][TILE_X + HALOSIZE];
 	__local unsigned int tileRain[TILE_Y + HALOSIZE][TILE_X + HALOSIZE];
 
 
@@ -398,7 +398,137 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 
+	// Top side halo
+	/*if (LID.y == 0)
+	{
+		if (GID.y == 0)
+		{
+			tile[0][LID.x + 1] = 0.f;
+			tileRain[0][LID.x + 1] = 0;
+		}
+		else
+		{
+			tile[0][LID.x + 1] = d_pos[(GID.y - 1) * width + GID.x];
+			tileRain[0][LID.x + 1] = d_rain[(GID.y - 1) * width + GID.x];
+		}
+	}*/
 
+	// Down side halo
+	if (LID.y == LSIZE.y - 1)
+	{
+		if (GID.y == height - 1)
+		{
+			tileSlopes[TILE_Y + 1][LID.x + 1] = (float4)(0.f, 0.f, 0.f, 0.f);
+		}
+		else
+		{
+			tileSlopes[TILE_Y + 1][LID.x + 1] = (float4)
+				(d_pos[(GID.x - 1) + width * (GID.y + 1)].y - d_pos[particleID].y,
+					);
+			tile[TILE_Y + 1][LID.x + 1] = d_pos[(GID.y + 1) * width + GID.x];
+			tileRain[TILE_Y + 1][LID.x + 1] = d_rain[(GID.y + 1) * width + GID.x];
+		}
+	}
+
+	// Left side halo
+	if (LID.x == 0)
+	{
+		if (GID.x == 0)
+		{
+			tile[LID.y + 1][0] = 0.f;
+			tileRain[LID.y + 1][0] = 0;
+		}
+		else
+		{
+			tile[LID.y + 1][0] = d_pos[(GID.y) * width + GID.x - 1];
+			tileRain[LID.y + 1][0] = d_rain[(GID.y) * width + GID.x - 1];
+		}
+	}
+
+	// Right side halo
+	if (LID.x == LSIZE.x - 1)
+	{
+		if (GID.x == width - 1)
+		{
+			tile[LID.y + 1][TILE_X + 1] = 0.f;
+			tileRain[LID.y + 1][TILE_X + 1] = 0;
+		}
+		else
+		{
+			tile[LID.y + 1][TILE_X + 1] = d_pos[(GID.y) * width + GID.x + 1];
+			tileRain[LID.y + 1][TILE_X + 1] = d_rain[(GID.y) * width + GID.x + 1];
+		}
+	}
+
+
+
+
+	// Corners
+
+	// Left top
+	if (LID.x == 1 && LID.y == 1)
+	{
+		if (GID.x == 1 || GID.y == 1)
+		{
+			tile[0][0] = 0.f;
+			tileRain[0][0] = 0;
+		}
+		else
+		{
+			tile[0][0] = d_pos[(GID.y - 2) * width + GID.x - 2];
+			tileRain[0][0] = d_rain[(GID.y - 2) * width + GID.x - 2];
+		}
+	}
+
+	// Right top
+	if (LID.x == LSIZE.x - 2 && LID.y == 1)
+	{
+		if (GID.x == width - 2 || GID.y == 1)
+		{
+			tile[0][TILE_X + 1] = 0.f;
+			tileRain[0][TILE_X + 1] = 0;
+		}
+		else
+		{
+			tile[0][TILE_X + 1] = d_pos[(GID.y - 2) * width + GID.x + 2];
+			tileRain[0][TILE_X + 1] = d_rain[(GID.y - 2) * width + GID.x + 2];
+		}
+	}
+
+	// Left bottom
+	if (LID.x == 1 && LID.y == LSIZE.y - 2)
+	{
+		if (GID.x == 1 || GID.y == height - 2)
+		{
+			tile[TILE_Y + 1][0] = 0.f;
+			tileRain[TILE_Y + 1][0] = 0;
+		}
+		else
+		{
+			tile[TILE_Y + 1][0] = d_pos[(GID.y + 2) * width + GID.x - 2];
+			tileRain[TILE_Y + 1][0] = d_rain[(GID.y + 2) * width + GID.x - 2];
+		}
+	}
+
+	// Right bottom
+	if (LID.x == LSIZE.x - 2 && LID.y == LSIZE.y - 2)
+	{
+		if (GID.x == width - 1 || GID.y == height - 2)
+		{
+			tile[TILE_Y + 1][TILE_X + 1] = 0.f;
+			tileRain[TILE_Y + 1][TILE_X + 1] = 0;
+		}
+		else
+		{
+			tile[TILE_Y + 1][TILE_X + 1] = d_pos[(GID.y + 2) * width + GID.x + 2];
+			tileRain[TILE_Y + 1][TILE_X + 1] = d_rain[(GID.y + 2) * width + GID.x + 2];
+		}
+	}
+
+
+
+	tile[LID.y + 1][LID.x + 1] = d_pos[(GID.y) * width + GID.x];
+	tileRain[LID.y + 1][LID.x + 1] = d_rain[(GID.y) * width + GID.x];
 
 
 
