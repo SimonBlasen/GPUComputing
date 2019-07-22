@@ -545,6 +545,75 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 
+	// Remove own rain
+
+
+	// Top side halo
+	if (LID.y == 0)
+	{
+		tileRain[0][LID.x + 1] = 0;
+	}
+
+	// Down side halo
+	if (LID.y == LSIZE.y - 1)
+	{
+		tileRain[TILE_Y + 1][LID.x + 1] = 0;
+	}
+
+	// Left side halo
+	if (LID.x == 0)
+	{
+		tileRain[LID.y + 1][0] = 0;
+	}
+
+	// Right side halo
+	if (LID.x == LSIZE.x - 1)
+	{
+		tileRain[LID.y + 1][TILE_X + 1] = 0;
+	}
+
+	// Corners
+
+	// Left top
+	if (LID.x == 1 && LID.y == 1)
+	{
+		tileRain[0][0] = 0;
+	}
+
+	// Right top
+	if (LID.x == LSIZE.x - 2 && LID.y == 1)
+	{
+		tileRain[0][TILE_X + 1] = 0;
+	}
+
+	// Left bottom
+	if (LID.x == 1 && LID.y == LSIZE.y - 2)
+	{
+		tileRain[TILE_Y + 1][0] = 0;
+	}
+
+	// Right bottom
+	if (LID.x == LSIZE.x - 2 && LID.y == LSIZE.y - 2)
+	{
+		tileRain[TILE_Y + 1][TILE_X + 1] = 0;
+	}
+	tileRain[LID.y + 1][LID.x + 1] = 0;
+
+
+
+
+
+
+
+
+
+
+
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+
+
 
 	//
 	//
@@ -621,11 +690,26 @@ __kernel void InitHeightfield(unsigned int width,
 		resultRain = rainHere - RAIN_ABSORBATION;
 	}
 
-	atomic_add(d_rain + particleID, -(rainHere));
+	//atomic_add(d_rain + particleID, -(rainHere));
 
 
-	// Remove own rain
-	tileRain[LID.y][LID.x] = 0;
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -642,25 +726,6 @@ __kernel void InitHeightfield(unsigned int width,
 	slope5 = tileSlopes[LID.y + 1][LID.x + 1].y + PI_HALF;
 	slope6 = tileSlopes[LID.y + 1][LID.x + 1].z + PI_HALF;
 	slope7 = tileSlopes[LID.y + 1][LID.x + 1].w + PI_HALF;
-
-	/*slope0 = inverseTan(slope0 * SLOPE_FACTOR) + PI_HALF;
-	slope1 = inverseTan(slope1 * SLOPE_FACTOR) + PI_HALF;
-	slope2 = inverseTan(slope2 * SLOPE_FACTOR) + PI_HALF;
-	slope3 = inverseTan(slope3 * SLOPE_FACTOR) + PI_HALF;
-	slope4 = inverseTan(slope4 * SLOPE_FACTOR) + PI_HALF;
-	slope5 = inverseTan(slope5 * SLOPE_FACTOR) + PI_HALF;
-	slope6 = inverseTan(slope6 * SLOPE_FACTOR) + PI_HALF;
-	slope7 = inverseTan(slope7 * SLOPE_FACTOR) + PI_HALF;*/
-
-	
-	/*slope0 = slope0 > 99990.f ? 0.f : inverseTan(-slope0 * SLOPE_FACTOR) + PI_HALF;
-	slope1 = slope1 > 99990.f ? 0.f : inverseTan(-slope1 * SLOPE_FACTOR) + PI_HALF;
-	slope2 = slope2 > 99990.f ? 0.f : inverseTan(-slope2 * SLOPE_FACTOR) + PI_HALF;
-	slope3 = slope3 > 99990.f ? 0.f : inverseTan(-slope3 * SLOPE_FACTOR) + PI_HALF;
-	slope4 = slope4 > 99990.f ? 0.f : inverseTan(-slope4 * SLOPE_FACTOR) + PI_HALF;
-	slope5 = slope5 > 99990.f ? 0.f : inverseTan(-slope5 * SLOPE_FACTOR) + PI_HALF;
-	slope6 = slope6 > 99990.f ? 0.f : inverseTan(-slope6 * SLOPE_FACTOR) + PI_HALF;
-	slope7 = slope7 > 99990.f ? 0.f : inverseTan(-slope7 * SLOPE_FACTOR) + PI_HALF;*/
 
 
 	float sumSlopes = slope0
@@ -714,45 +779,215 @@ __kernel void InitHeightfield(unsigned int width,
 	if (moveDir == 0)
 	{
 		if (GID.x + 1 < width && GID.y < height)
-			atomic_add(d_rain + (GID.x + 1) + width * (GID.y + 0), resultRain);
+		{
+			tileRain[LID.y + 1][LID.x + 2] += resultRain;
+		}
+			//atomic_add(d_rain + (GID.x + 1) + width * (GID.y + 0), resultRain);
 	}
 	else if (moveDir == 1)
 	{
 		if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
-			atomic_add(d_rain + (GID.x + 1) + width * (GID.y + 1), resultRain);
+		{
+			tileRain[LID.y + 2][LID.x + 2] += resultRain;
+		}
+			//atomic_add(d_rain + (GID.x + 1) + width * (GID.y + 1), resultRain);
 	}
 	else if (moveDir == 2)
 	{
 		if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
-			atomic_add(d_rain + (GID.x + 0) + width * (GID.y + 1), resultRain);
+		{
+			tileRain[LID.y + 2][LID.x + 1] += resultRain;
+		}
+			//atomic_add(d_rain + (GID.x + 0) + width * (GID.y + 1), resultRain);
 	}
 	else if (moveDir == 3)
 	{
 		if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
-			atomic_add(d_rain + (GID.x - 1) + width * (GID.y + 1), resultRain);
+		{
+			tileRain[LID.y + 2][LID.x + 0] += resultRain;
+		}
+			//atomic_add(d_rain + (GID.x - 1) + width * (GID.y + 1), resultRain);
 	}
 	else if (moveDir == 4)
 	{
 		if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 0 >= 0 && GID.y + 0 < height)
-			atomic_add(d_rain + (GID.x - 1) + width * (GID.y + 0), resultRain);
+		{
+			tileRain[LID.y + 1][LID.x + 0] += resultRain;
+		}
+			//atomic_add(d_rain + (GID.x - 1) + width * (GID.y + 0), resultRain);
 	}
 	else if (moveDir == 5)
 	{
 		if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
-			atomic_add(d_rain + (GID.x - 1) + width * (GID.y - 1), resultRain);
+		{
+			tileRain[LID.y + 0][LID.x + 0] += resultRain;
+		}
+			//atomic_add(d_rain + (GID.x - 1) + width * (GID.y - 1), resultRain);
 	}
 	else if (moveDir == 6)
 	{
 		if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
-			atomic_add(d_rain + (GID.x + 0) + width * (GID.y - 1), resultRain);
+		{
+			tileRain[LID.y + 0][LID.x + 1] += resultRain;
+		}
+			//atomic_add(d_rain + (GID.x + 0) + width * (GID.y - 1), resultRain);
 	}
 	else if (moveDir == 7)
 	{
 		if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
-			atomic_add(d_rain + (GID.x + 1) + width * (GID.y - 1), resultRain);
+		{
+			tileRain[LID.y + 0][LID.x + 2] += resultRain;
+		}
+			//atomic_add(d_rain + (GID.x + 1) + width * (GID.y - 1), resultRain);
 	}
 		
 	
+	// Writeback rain
+
+
+
+
+	// Top side halo
+	if (LID.y == 0)
+	{
+		if (GID.y == 0)
+		{
+
+		}
+		else
+		{
+			unsigned int val = tileRain[0][LID.x + 1];
+			atomic_add(d_rain + (GID.y - 1) * width + GID.x, val);
+		}
+	}
+
+	// Down side halo
+	if (LID.y == LSIZE.y - 1)
+	{
+		if (GID.y == height - 1)
+		{
+
+		}
+		else
+		{
+			unsigned int val = tileRain[TILE_Y + 1][LID.x + 1];
+			atomic_add(d_rain + (GID.y + 1) * width + GID.x, val);
+		}
+	}
+
+	// Left side halo
+	if (LID.x == 0)
+	{
+		if (GID.x == 0)
+		{
+
+		}
+		else
+		{
+			unsigned int val = tileRain[TILE_Y + 1][LID.x + 1];
+			atomic_add(d_rain + (GID.y + 0) * width + GID.x - 1, tileRain[LID.y + 1][0]);
+		}
+	}
+
+	// Right side halo
+	if (LID.x == LSIZE.x - 1)
+	{
+		if (GID.x == width - 1)
+		{
+
+		}
+		else
+		{
+			atomic_add(d_rain + (GID.y + 0) * width + GID.x + 1, tileRain[LID.y + 1][TILE_X + 1]);
+		}
+	}
+
+
+
+
+	// Corners
+
+	// Left top
+	if (LID.x == 1 && LID.y == 1)
+	{
+		if (GID.x == 1 || GID.y == 1)
+		{
+
+		}
+		else
+		{
+			atomic_add(d_rain + (GID.y - 2) * width + GID.x - 2, tileRain[0][0]);
+		}
+	}
+
+	// Right top
+	if (LID.x == LSIZE.x - 2 && LID.y == 1)
+	{
+		if (GID.x == width - 2 || GID.y == 1)
+		{
+
+		}
+		else
+		{
+			atomic_add(d_rain + (GID.y - 2) * width + GID.x + 2, tileRain[0][TILE_X + 1]);
+		}
+	}
+
+	// Left bottom
+	if (LID.x == 1 && LID.y == LSIZE.y - 2)
+	{
+		if (GID.x == 1 || GID.y == height - 2)
+		{
+
+		}
+		else
+		{
+			atomic_add(d_rain + (GID.y + 2) * width + GID.x - 2, tileRain[TILE_Y + 1][0]);
+		}
+	}
+
+	// Right bottom
+	if (LID.x == LSIZE.x - 2 && LID.y == LSIZE.y - 2)
+	{
+		if (GID.x == width - 1 || GID.y == height - 2)
+		{
+
+		}
+		else
+		{
+			atomic_add(d_rain + (GID.y + 2) * width + GID.x + 2, tileRain[TILE_Y + 1][TILE_X + 1]);
+		}
+	}
+
+
+	if (true ||LID.x == 0 || LID.y == 0 || LID.x == LSIZE.x - 1 || LID.y == LSIZE.y - 1)
+	{
+		atomic_add(d_rain + particleID, -(rainHere));
+		atomic_add(d_rain + (GID.y + 0) * width + GID.x + 0, tileRain[LID.y][LID.x]);
+	}
+	else
+	{
+		d_rain[particleID] = tileRain[LID.y][LID.x];
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
