@@ -155,7 +155,7 @@ __kernel void InitHeightfield(unsigned int width,
 	float4 x0 = d_pos[particleID];
 
 	//x0.y = x0.y + sin(x0.x * 20.f + x0.z * 26.f) * 0.06f + cos(x0.x * 23.f + x0.z * 16.f) * 0.06f;
-	x0.y = perlin2d(GID.x, GID.y, 0.006f, 1.f, seed) * 0.13f + perlin2d(GID.x, GID.y, 0.0612f, 1.f, seed) * 0.003f;
+	x0.y = perlin2d(GID.x, GID.y, 0.006f * 1.f, 1.f, seed) * 0.15f + perlin2d(GID.x, GID.y, 0.0312f * 1.f, 1.f, seed) * 0.003f;
 
 	d_pos[particleID] = x0;
 
@@ -169,10 +169,11 @@ __kernel void InitHeightfield(unsigned int width,
 #define RAIN_IMPACT 0.001f
 #define RAIN_ABSORBATION 1
 #define DELTA_T 0.7f
-#define SLOPE_FACTOR 10000.f
+#define SLOPE_FACTOR 100000.f
 //#define SMOOTH_STEP 0.01f
 #define WEIGHT_SMOOTH_DIAG 0.02f
 #define WEIGHT_SMOOTH_ORTO 0.02f
+#define RAIN_LIFETIME 100;
 
 
 
@@ -449,7 +450,12 @@ float Abso(float x)
 
 float RainProb(float4 pos, float4 normal)
 {
-	float prob = (pos.y - 0.1f) / 0.3f;
+	float prob = (pos.y - 0.07f) / 0.15f;
+	if (prob < 0.f)
+	{
+		prob = 0.f;
+	}
+	prob *= prob;
 	if (prob > 1.f)
 	{
 		prob = 1.f;
@@ -459,8 +465,8 @@ float RainProb(float4 pos, float4 normal)
 		prob = 0.f;
 	}
 
-	prob *= 0.7f;
-	prob += ((inverseTan((max(Abso(normal.x), Abso(normal.z)) / normal.y)) + PI_HALF) / (PI_HALF * 2.f)) * 0.3f;
+	//prob *= 0.7f;
+	prob += ((inverseTan(0.01f * ((max(Abso(normal.x), Abso(normal.z)) / normal.y))) + 0.f) / (PI_HALF * 1.f));
 	
 	return prob;
 }
@@ -505,7 +511,7 @@ __kernel void IntegrateRain(unsigned int width,
 
 		if (randF < RainProb(d_pos[particleID], normal))
 		{
-			d_rain[particleID] = d_rain[particleID] + 10000;
+			d_rain[particleID] = d_rain[particleID] + RAIN_LIFETIME;
 		}
 	}
 
