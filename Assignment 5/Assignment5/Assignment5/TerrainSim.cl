@@ -737,6 +737,7 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 1][LID.x + 2] += resultRain;
 	}
+	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 1)
 	{
 		//if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
@@ -745,6 +746,7 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 2][LID.x + 2] += resultRain;
 	}
+	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 2)
 	{
 		//if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
@@ -753,6 +755,7 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 2][LID.x + 1] += resultRain;
 	}
+	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 3)
 	{
 		//if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
@@ -761,6 +764,7 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 		 	tileRain[LID.y + 2][LID.x + 0] += resultRain;
 	}
+	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 4)
 	{
 		//if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 0 >= 0 && GID.y + 0 < height)
@@ -769,6 +773,7 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 1][LID.x + 0] += resultRain;
 	}
+	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 5)
 	{
 		//if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
@@ -777,6 +782,7 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 0][LID.x + 0] += resultRain;
 	}
+	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 6)
 	{
 		//if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
@@ -785,6 +791,7 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 0][LID.x + 1] += resultRain;
 	}
+	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 7)
 	{
 		//if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
@@ -1000,7 +1007,7 @@ float Abso(float x)
 
 float RainProb(float4 pos, float4 normal)
 {
-	float prob = (pos.y - 0.07f) / 0.15f;
+	float prob = (pos.y - 0.00f) / 0.15f;
 	if (prob < 0.f)
 	{
 		prob = 0.f;
