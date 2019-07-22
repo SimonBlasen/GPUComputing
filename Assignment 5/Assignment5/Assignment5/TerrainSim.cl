@@ -229,6 +229,8 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 	__local float4 tile[TILE_Y + HALOSIZE][TILE_X + HALOSIZE];
+	__local float tileSlopes[TILE_Y + HALOSIZE][TILE_X + HALOSIZE];
+	__local unsigned int tileRain[TILE_Y + HALOSIZE][TILE_X + HALOSIZE];
 
 
 
@@ -238,10 +240,12 @@ __kernel void InitHeightfield(unsigned int width,
 		if (GID.y == 0)
 		{
 			tile[0][LID.x + 1] = 0.f;
+			tileRain[0][LID.x + 1] = 0;
 		}
 		else
 		{
 			tile[0][LID.x + 1] = d_pos[(GID.y - 1) * width + GID.x];
+			tileRain[0][LID.x + 1] = d_rain[(GID.y - 1) * width + GID.x];
 		}
 	}
 
@@ -251,10 +255,12 @@ __kernel void InitHeightfield(unsigned int width,
 		if (GID.y == height - 1)
 		{
 			tile[TILE_Y + 1][LID.x + 1] = 0.f;
+			tileRain[TILE_Y + 1][LID.x + 1] = 0;
 		}
 		else
 		{
 			tile[TILE_Y + 1][LID.x + 1] = d_pos[(GID.y + 1) * width + GID.x];
+			tileRain[TILE_Y + 1][LID.x + 1] = d_rain[(GID.y + 1) * width + GID.x];
 		}
 	}
 
@@ -264,10 +270,12 @@ __kernel void InitHeightfield(unsigned int width,
 		if (GID.x == 0)
 		{
 			tile[LID.y + 1][0] = 0.f;
+			tileRain[LID.y + 1][0] = 0;
 		}
 		else
 		{
 			tile[LID.y + 1][0] = d_pos[(GID.y) * width + GID.x - 1];
+			tileRain[LID.y + 1][0] = d_rain[(GID.y) * width + GID.x - 1];
 		}
 	}
 
@@ -277,10 +285,12 @@ __kernel void InitHeightfield(unsigned int width,
 		if (GID.x == width - 1)
 		{
 			tile[LID.y + 1][TILE_X + 1] = 0.f;
+			tileRain[LID.y + 1][TILE_X + 1] = 0;
 		}
 		else
 		{
 			tile[LID.y + 1][TILE_X + 1] = d_pos[(GID.y) * width + GID.x + 1];
+			tileRain[LID.y + 1][TILE_X + 1] = d_rain[(GID.y) * width + GID.x + 1];
 		}
 	}
 
@@ -295,10 +305,12 @@ __kernel void InitHeightfield(unsigned int width,
 		if (GID.x == 1 || GID.y == 1)
 		{
 			tile[0][0] = 0.f;
+			tileRain[0][0] = 0;
 		}
 		else
 		{
 			tile[0][0] = d_pos[(GID.y - 2) * width + GID.x - 2];
+			tileRain[0][0] = d_rain[(GID.y - 2) * width + GID.x - 2];
 		}
 	}
 
@@ -308,10 +320,12 @@ __kernel void InitHeightfield(unsigned int width,
 		if (GID.x == width - 2 || GID.y == 1)
 		{
 			tile[0][TILE_X + 1] = 0.f;
+			tileRain[0][TILE_X + 1] = 0;
 		}
 		else
 		{
 			tile[0][TILE_X + 1] = d_pos[(GID.y - 2) * width + GID.x + 2];
+			tileRain[0][TILE_X + 1] = d_rain[(GID.y - 2) * width + GID.x + 2];
 		}
 	}
 
@@ -321,10 +335,12 @@ __kernel void InitHeightfield(unsigned int width,
 		if (GID.x == 1 || GID.y == height - 2)
 		{
 			tile[TILE_Y + 1][0] = 0.f;
+			tileRain[TILE_Y + 1][0] = 0;
 		}
 		else
 		{
 			tile[TILE_Y + 1][0] = d_pos[(GID.y + 2) * width + GID.x - 2];
+			tileRain[TILE_Y + 1][0] = d_rain[(GID.y + 2) * width + GID.x - 2];
 		}
 	}
 
@@ -334,16 +350,19 @@ __kernel void InitHeightfield(unsigned int width,
 		if (GID.x == width - 1 || GID.y == height - 2)
 		{
 			tile[TILE_Y + 1][TILE_X + 1] = 0.f;
+			tileRain[TILE_Y + 1][TILE_X + 1] = 0;
 		}
 		else
 		{
 			tile[TILE_Y + 1][TILE_X + 1] = d_pos[(GID.y + 2) * width + GID.x + 2];
+			tileRain[TILE_Y + 1][TILE_X + 1] = d_rain[(GID.y + 2) * width + GID.x + 2];
 		}
 	}
 
 
 
 	tile[LID.y + 1][LID.x + 1] = d_pos[(GID.y) * width + GID.x];
+	tileRain[LID.y + 1][LID.x + 1] = d_rain[(GID.y) * width + GID.x];
 
 
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -354,16 +373,44 @@ __kernel void InitHeightfield(unsigned int width,
 
 	unsigned int particleID = get_global_id(0) + get_global_id(1) * width;
 
-	if (d_newRain[particleID] > 0)
+	unsigned int newRain = d_newRain[particleID];
+
+	if (newRain > 0 /*&& (LID.x == 0 || LID.y == 0 || LID.x == LSIZE.x - 1 || LID.y == LSIZE.y - 1)*/)
 	{
-		unsigned int valNewRain = d_newRain[particleID];
-		atomic_add(d_rain + particleID, valNewRain);
+		//atomic_add(d_rain + particleID, newRain);
+		d_rain[particleID] += newRain;
 	}
 
-	unsigned int rainHere = d_rain[particleID];
+	unsigned int rainHere = tileRain[LID.y + 1][LID.x + 1];
 
 
 
+
+
+
+	// Slope Halo
+	//
+	//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//
+	//
+	// Slope Halo
+
+
+	if (LID.x)
 
 
 	float	slope0,
