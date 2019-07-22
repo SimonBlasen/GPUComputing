@@ -126,11 +126,11 @@ __kernel void InitHeightfield(unsigned int width,
 #define RAIN_IMPACT 0.005f
 #define RAIN_ABSORBATION 1
 #define DELTA_T 0.7f
-#define SLOPE_FACTOR 100000.f
+#define SLOPE_FACTOR 10000.f
 //#define SMOOTH_STEP 0.01f
 #define WEIGHT_SMOOTH_DIAG 0.02f
 #define WEIGHT_SMOOTH_ORTO 0.02f
-#define RAIN_LIFETIME 100;
+#define RAIN_LIFETIME 400;
 
 
 
@@ -723,7 +723,6 @@ __kernel void InitHeightfield(unsigned int width,
 
 	//resultRain = resultRain / 2;
 	
-
 
 
 	barrier(CLK_LOCAL_MEM_FENCE);

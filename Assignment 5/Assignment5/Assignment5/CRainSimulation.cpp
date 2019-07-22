@@ -141,8 +141,8 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	}*/
 
 
-	m_pSphere = gluNewQuadric();
-	gluQuadricNormals(m_pSphere, GLU_SMOOTH);
+	//wm_pSphere = gluNewQuadric();
+	//gluQuadricNormals(m_pSphere, GLU_SMOOTH);
 
 	///////////////////////////////////////////////////////////
 	// shader programs
@@ -237,7 +237,7 @@ bool CRainSimulation::InitResources(cl_device_id Device, cl_context Context)
 	// We scale the distance by 0.9 to get a nicer look for the cloth (more folds).
 	float restDistance = 1.f / ((float)m_TerrainResX)*0.9f;
 
-	m_TerrainSeed = 0;
+	m_TerrainSeed = 6000;
 
 	clError = clSetKernelArg(m_InitTerrainKernel, 0, sizeof(unsigned int), &m_TerrainResX);
 	clError |= clSetKernelArg(m_InitTerrainKernel, 1, sizeof(unsigned int), &m_TerrainResY);
