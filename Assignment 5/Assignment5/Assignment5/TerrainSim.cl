@@ -82,52 +82,6 @@ float inverseTan(float x)
 
 
 
-/*
-double fade(double t)
-{
-	return t * t * t * (t * (t * 6 - 15) + 10);
-}
-
-double lerp(double t, double a, double b)
-{
-	return a + t * (b - a);
-}
-
-double grad(int hash, double x, double y, double z)
-{
-	int h = hash & 15;                      // CONVERT LO 4 BITS OF HASH CODE
-	double u = h < 8 ? x : y,                 // INTO 12 GRADIENT DIRECTIONS.
-		v = h < 4 ? y : h == 12 || h == 14 ? x : z;
-	return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-}
-
-double noise(double x, double y, double z)
-{
-	int X = ((int)x) & 255,                  // FIND UNIT CUBE THAT
-		Y = ((int)y) & 255,                  // CONTAINS POINT.
-		Z = ((int)z) & 255;
-	x -= (int)x;                              // FIND RELATIVE X,Y,Z
-	y -= (int)y;                                // OF POINT IN CUBE.
-	z -= (int)z;
-	double u = fade(x),                                // COMPUTE FADE CURVES
-		v = fade(y),                                // FOR EACH OF X,Y,Z.
-		w = fade(z);
-	int A = P_ARRAY[X] + Y, AA = P_ARRAY[A] + Z, AB = P_ARRAY[A + 1] + Z,      // HASH COORDINATES OF
-		B = P_ARRAY[X + 1] + Y, BA = P_ARRAY[B] + Z, BB = P_ARRAY[B + 1] + Z;      // THE 8 CUBE CORNERS,
-
-	return lerp(w, lerp(v, lerp(u, grad(P_ARRAY[AA], x, y, z),  // AND ADD
-		grad(P_ARRAY[BA], x - 1, y, z)), // BLENDED
-		lerp(u, grad(P_ARRAY[AB], x, y - 1, z),  // RESULTS
-			grad(P_ARRAY[BB], x - 1, y - 1, z))),// FROM  8
-		lerp(v, lerp(u, grad(P_ARRAY[AA + 1], x, y, z - 1),  // CORNERS
-			grad(P_ARRAY[BA + 1], x - 1, y, z - 1)), // OF CUBE
-			lerp(u, grad(P_ARRAY[AB + 1], x, y - 1, z - 1),
-				grad(P_ARRAY[BB + 1], x - 1, y - 1, z - 1))));
-}
-
-
-
-*/
 
 
 __kernel void InitHeightfield(unsigned int width,
@@ -169,7 +123,7 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 
-#define RAIN_IMPACT 0.001f
+#define RAIN_IMPACT 0.005f
 #define RAIN_ABSORBATION 1
 #define DELTA_T 0.7f
 #define SLOPE_FACTOR 100000.f
@@ -620,8 +574,6 @@ __kernel void InitHeightfield(unsigned int width,
 	// Slope Halo
 
 
-	//if (LID.x)
-
 
 	float	slope0,
 		slope1,
@@ -665,12 +617,8 @@ __kernel void InitHeightfield(unsigned int width,
 		slope7 = 100000.f;
 
 
-	uint seed = randomSeedX + GID.x;
-	//uint t = seed ^ (seed << 11);
-	//uint random = randomSeedY ^ (randomSeedY >> 19) ^ (t ^ (t >> 8));
-
 	uint random = (randomSeedX * GID.x * 401267 + randomSeedY * GID.y * 1013) % 32767;
-	//uint random = 32767/2;
+	
 
 
 
@@ -713,9 +661,8 @@ __kernel void InitHeightfield(unsigned int width,
 
 
 
-	float randF = (((float)random) / (32767.f)); //(((float)random) / (4294967296.f));
+	float randF = (((float)random) / (32767.f));
 
-	//randF = 0.0f;
 
 
 	slope0 = -tileSlopes[LID.y + 1][LID.x + 2].x + PI_HALF;
@@ -746,28 +693,28 @@ __kernel void InitHeightfield(unsigned int width,
 	slope6 = slope6 / sumSlopes;
 	slope7 = slope7 / sumSlopes;
 
-	slope1 = slope0 + slope1;
-	slope2 = slope1 + slope2;
-	slope3 = slope2 + slope3;
-	slope4 = slope3 + slope4;
-	slope5 = slope4 + slope5;
-	slope6 = slope5 + slope6;
-	slope7 = slope6 + slope7;	// is equal 1
+	float slope1S = slope0 + slope1;
+	float slope2S = slope1S + slope2;
+	float slope3S = slope2S + slope3;
+	float slope4S = slope3S + slope4;
+	float slope5S = slope4S + slope5;
+	float slope6S = slope5S + slope6;
+	float slope7S = slope6S + slope7;	// is equal 1
 
 	unsigned int moveDir = 0;
 	if (randF < slope0)
 		moveDir = 0;
-	else if (randF < slope1)
+	else if (randF < slope1S)
 		moveDir = 1;
-	else if (randF < slope2)
+	else if (randF < slope2S)
 		moveDir = 2;
-	else if (randF < slope3)
+	else if (randF < slope3S)
 		moveDir = 3;
-	else if (randF < slope4)
+	else if (randF < slope4S)
 		moveDir = 4;
-	else if (randF < slope5)
+	else if (randF < slope5S)
 		moveDir = 5;
-	else if (randF < slope6)
+	else if (randF < slope6S)
 		moveDir = 6;
 	else
 		moveDir = 7;
@@ -778,7 +725,6 @@ __kernel void InitHeightfield(unsigned int width,
 	
 
 
-	atomic_add(d_rain + particleID, -(rainHere));
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -791,7 +737,6 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 1][LID.x + 2] += resultRain;
 	}
-	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 1)
 	{
 		//if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
@@ -800,7 +745,6 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 2][LID.x + 2] += resultRain;
 	}
-	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 2)
 	{
 		//if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
@@ -809,7 +753,6 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 2][LID.x + 1] += resultRain;
 	}
-	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 3)
 	{
 		//if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
@@ -818,7 +761,6 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 		 	tileRain[LID.y + 2][LID.x + 0] += resultRain;
 	}
-	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 4)
 	{
 		//if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 0 >= 0 && GID.y + 0 < height)
@@ -827,7 +769,6 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 1][LID.x + 0] += resultRain;
 	}
-	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 5)
 	{
 		//if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
@@ -836,7 +777,6 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 0][LID.x + 0] += resultRain;
 	}
-	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 6)
 	{
 		//if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
@@ -845,7 +785,6 @@ __kernel void InitHeightfield(unsigned int width,
 		//}
 			tileRain[LID.y + 0][LID.x + 1] += resultRain;
 	}
-	barrier(CLK_LOCAL_MEM_FENCE);
 	if (moveDir == 7)
 	{
 		//if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
@@ -974,7 +913,7 @@ __kernel void InitHeightfield(unsigned int width,
 
 	if (LID.x == 0 || LID.y == 0 || LID.x == LSIZE.x - 1 || LID.y == LSIZE.y - 1)
 	{
-		//atomic_add(d_rain + particleID, -(rainHere));
+		atomic_add(d_rain + particleID, -(rainHere));
 		atomic_add(d_rain + (GID.y + 0) * width + GID.x + 0, tileRain[LID.y + 1][LID.x + 1]);
 	}
 	else
@@ -1013,7 +952,28 @@ __kernel void InitHeightfield(unsigned int width,
 		lerpFac = x0.y;
 	}
 
-	x0.y = x0.y - RAIN_IMPACT * lerpFac* (rainHere > 0 ? 1.f : 0.f) * DELTA_T;
+
+	float slopeTaken = 0.f;
+	if (moveDir == 0)
+		slopeTaken = slope0 * sumSlopes - PI_HALF;
+	if (moveDir == 1)
+		slopeTaken = slope1 * sumSlopes - PI_HALF;
+	if (moveDir == 2)
+		slopeTaken = slope2 * sumSlopes - PI_HALF;
+	if (moveDir == 3)
+		slopeTaken = slope3 * sumSlopes - PI_HALF;
+	if (moveDir == 4)
+		slopeTaken = slope4 * sumSlopes - PI_HALF;
+	if (moveDir == 5)
+		slopeTaken = slope5 * sumSlopes - PI_HALF;
+	if (moveDir == 6)
+		slopeTaken = slope6 * sumSlopes - PI_HALF;
+	if (moveDir == 7)
+		slopeTaken = slope7 * sumSlopes - PI_HALF;
+
+	slopeTaken /= PI_HALF;
+
+	x0.y = x0.y - RAIN_IMPACT * lerpFac* (rainHere > 0 ? 1.f : 0.f) * DELTA_T * slopeTaken;
 
 
 	x0.w = rainHere > 3 ? 100.f : 0.f;
@@ -1684,30 +1644,29 @@ __kernel void SatisfyConstraints(unsigned int width,
 
 
 	unsigned int partID = get_global_id(0) + get_global_id(1) * width;
-	// This is just to keep every 8th particle of the first row attached to the bar
     
 
-		float corVecSum = 0.f;
+	float corVecSum = 0.f;
 
-		
-		if (GID.y >= 2 && GID.y <= height - 3)
-		{
-			corVecSum += SatisfyContConstraint(tile[LID.y + 2 - 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2]) * WEIGHT_SMOOTH_ORTO;
-		}
-		if (GID.x >= 2 && GID.x <= height - 3)
-		{
-			corVecSum += SatisfyContConstraint(tile[LID.y + 2][LID.x + 2 - 2], tile[LID.y + 2][LID.x + 2 - 1], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 + 1], tile[LID.y + 2][LID.x + 2 + 2]) * WEIGHT_SMOOTH_ORTO;
-		}
+	
+	if (GID.y >= 2 && GID.y <= height - 3)
+	{
+		corVecSum += SatisfyContConstraint(tile[LID.y + 2 - 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2], tile[LID.y + 2 + 2][LID.x + 2]) * WEIGHT_SMOOTH_ORTO;
+	}
+	if (GID.x >= 2 && GID.x <= height - 3)
+	{
+		corVecSum += SatisfyContConstraint(tile[LID.y + 2][LID.x + 2 - 2], tile[LID.y + 2][LID.x + 2 - 1], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2][LID.x + 2 + 1], tile[LID.y + 2][LID.x + 2 + 2]) * WEIGHT_SMOOTH_ORTO;
+	}
 
-		if (GID.y >= 2 && GID.x >= 2 && GID.y <= height - 3 && GID.x <= height - 3)
-		{
-			corVecSum += SatisfyContConstraint(tile[LID.y + 2 - 2][LID.x + 2 - 2], tile[LID.y + 2 - 1][LID.x + 2 - 1], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2 + 1], tile[LID.y + 2 + 2][LID.x + 2 + 2]) * WEIGHT_SMOOTH_DIAG;
-			corVecSum += SatisfyContConstraint(tile[LID.y + 2 + 2][LID.x + 2 - 2], tile[LID.y + 2 + 1][LID.x + 2 - 1], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2 + 1], tile[LID.y + 2 - 2][LID.x + 2 + 2]) * WEIGHT_SMOOTH_DIAG;
-		}
-		
+	if (GID.y >= 2 && GID.x >= 2 && GID.y <= height - 3 && GID.x <= height - 3)
+	{
+		corVecSum += SatisfyContConstraint(tile[LID.y + 2 - 2][LID.x + 2 - 2], tile[LID.y + 2 - 1][LID.x + 2 - 1], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 + 1][LID.x + 2 + 1], tile[LID.y + 2 + 2][LID.x + 2 + 2]) * WEIGHT_SMOOTH_DIAG;
+		corVecSum += SatisfyContConstraint(tile[LID.y + 2 + 2][LID.x + 2 - 2], tile[LID.y + 2 + 1][LID.x + 2 - 1], tile[LID.y + 2][LID.x + 2], tile[LID.y + 2 - 1][LID.x + 2 + 1], tile[LID.y + 2 - 2][LID.x + 2 + 2]) * WEIGHT_SMOOTH_DIAG;
+	}
+	
 
-		tile[LID.y + 2][LID.x + 2].y += corVecSum;
-		d_posOut[partID] = tile[LID.y + 2][LID.x + 2];
+	tile[LID.y + 2][LID.x + 2].y += corVecSum;
+	d_posOut[partID] = tile[LID.y + 2][LID.x + 2];
 
 
 	
