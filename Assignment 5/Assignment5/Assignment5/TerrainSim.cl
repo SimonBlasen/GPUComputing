@@ -155,7 +155,7 @@ __kernel void InitHeightfield(unsigned int width,
 	float4 x0 = d_pos[particleID];
 
 	//x0.y = x0.y + sin(x0.x * 20.f + x0.z * 26.f) * 0.06f + cos(x0.x * 23.f + x0.z * 16.f) * 0.06f;
-	x0.y = perlin2d(GID.x, GID.y, 0.01f, 1.f, seed) * 0.3f;
+	x0.y = perlin2d(GID.x, GID.y, 0.01f, 1.f, seed) * 0.2f + perlin2d(GID.x, GID.y, 0.00112f, 1.f, seed) * 0.1f;
 
 	d_pos[particleID] = x0;
 
@@ -431,49 +431,19 @@ __kernel void InitHeightfield(unsigned int width,
 
 	d_pos[particleID] = x0;
 
-
-
-
-
-
-	// This is just to keep every 8th particle of the first row attached to the bar
-    /*if(particleID > width-1 || ( particleID & ( 7 )) != 0){
-
-		float4 windA = (float4) (sin(simulationTime * 1.1f) * 2.f, 0.f, sin(simulationTime * 1.0f) * 5.f, 0.f);
-
-		// ADD YOUR CODE HERE!
-
-		// Read the positions
-		// Compute the new one position using the Verlet position integration, taking into account gravity and wind
-		// Move the value from d_pos into d_prevPos and store the new one in d_pos
-
-
-		float4 x0 = d_prevPos[particleID];
-		float4 x1 = d_pos[particleID];
-
-		float4 v1 = (x1 - x0);
-		v1.x /= elapsedTime;
-		v1.y /= elapsedTime;
-		v1.z /= elapsedTime;
-
-		// If for initialization of prevPos-Array
-		if (v1.y < 100.f && v1.y > -100.f)
-		{
-			float4 a1 = windA + G_ACCEL;
-
-			float4 x2 = x1 + v1 * elapsedTime + 0.5f * a1 * elapsedTime * elapsedTime;
-
-			x2.w = 0.f;
-
-			d_pos[particleID] = x2; //x1 + ((float4)(0.f, -0.001f, 0.f, 0.f));
-		}
-		x1.w = 0.f;
-		d_prevPos[particleID] = x1;
-
-    }*/
 }
 
+/*float Gauss2D(float x, float y, float uX, float uY, float variant)
+{
+	return (1.f / (2.f * CL_M_PI * variant * variant)) * exp(-1.f * ((x - uX) * (x - uX) + (y - uY) * (y - uY)) / (2.f * variant * variant));
+}*/
 
+float RainProb(float4 pos, float4 normal)
+{
+	float prob = pos.y / 0.3f;
+	
+	return prob;
+}
 
 __kernel void IntegrateRain(unsigned int width,
 	unsigned int height,
@@ -487,6 +457,39 @@ __kernel void IntegrateRain(unsigned int width,
 	unsigned int randomSeedX,
 	unsigned int randomSeedY)
 {
+	// Make sure the work-item does not map outside the cloth
+	if (get_global_id(0) >= width || get_global_id(1) >= height)
+		return;
+
+	unsigned int particleID = get_global_id(0) + get_global_id(1) * width;
+	int2 GID;
+	GID.x = get_global_id(0);
+	GID.y = get_global_id(1);
+
+
+	uint random = (randomSeedX * GID.x * 301267 + randomSeedY * GID.y * 2013) % 32767;
+
+	float randF = (((float)random) / (32767.f)); //(((float)random) / (4294967296.f));
+
+
+	if (GID.x > 0 && GID.x < width - 1 && GID.y > 0 && GID.y < height - 1)
+	{
+		float4 self = d_pos[GID.x + GID.y * width];
+		float4 left = d_pos[GID.x - 1 + GID.y * width];
+		float4 right = d_pos[GID.x + 1 + GID.y * width];
+		float4 up = d_pos[GID.x + (GID.y + 1) * width];
+		float4 down = d_pos[GID.x + (GID.y - 1) * width];
+
+
+		float4 normal = (float4)(left.y - right.y, 1.f, down.y - up.y, 0.f);
+
+		if (randF < RainProb(d_pos[particleID], normal))
+		{
+			d_rain[particleID] = d_rain[particleID] + 10000;
+		}
+	}
+
+
 
 }
 

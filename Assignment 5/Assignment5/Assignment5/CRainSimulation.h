@@ -120,6 +120,8 @@ protected:
 	bool					m_firstRun = true;
 	bool					m_copyRainArray = false;
 
+	unsigned int			m_RainKernelCounter = 0;
+
 	// mouse
 	int						m_Buttons = 0;
 	int						m_PrevX = 0;

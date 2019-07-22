@@ -327,6 +327,7 @@ void CRainSimulation::ReleaseResources()
 	SAFE_RELEASE_MEMOBJECT(m_clNewRainArray);
 
 	SAFE_RELEASE_KERNEL(m_IntegrateKernel);
+	SAFE_RELEASE_KERNEL(m_IntegrateRainKernel);
 	SAFE_RELEASE_KERNEL(m_NormalKernel);
 	SAFE_RELEASE_KERNEL(m_ConstraintKernel);
 	SAFE_RELEASE_KERNEL(m_CollisionsKernel);
@@ -401,6 +402,23 @@ void CRainSimulation::ComputeGPU(cl_context , cl_command_queue CommandQueue, siz
 
 		V_RETURN_CL(clEnqueueWriteBuffer(CommandQueue, m_clNewRainArray, CL_TRUE, 0, m_TerrainResX * m_TerrainResY * sizeof(cl_uint), m_hRainArray, 0, NULL, NULL), "Error copying data from host to device!");
 		clErr = clFinish(CommandQueue);
+	}
+
+	m_RainKernelCounter++;
+	if (m_RainKernelCounter > 100)
+	{
+		clErr = clSetKernelArg(m_IntegrateRainKernel, 6, sizeof(cl_float), (void*)& m_ElapsedTime);
+		clErr |= clSetKernelArg(m_IntegrateRainKernel, 7, sizeof(cl_float), (void*)& m_PrevElapsedTime);
+		clErr |= clSetKernelArg(m_IntegrateRainKernel, 8, sizeof(cl_float), (void*)& m_simulationTime);
+		clErr |= clSetKernelArg(m_IntegrateRainKernel, 9, sizeof(unsigned int), &randSeedX);
+		clErr |= clSetKernelArg(m_IntegrateRainKernel, 10, sizeof(unsigned int), &randSeedY);
+		V_RETURN_CL(clErr, "Failed to set integration rain kernel params");
+
+		clErr = clEnqueueNDRangeKernel(CommandQueue, m_IntegrateRainKernel, 2, 0, globalWorkSize, LocalWorkSize, 0, 0, 0);
+		V_RETURN_CL(clErr, "Error executing m_IntegrateRainKernel");
+		m_RainKernelCounter = 0;
+
+		cout << "Running Rain Kernel" << endl;
 	}
 
 
