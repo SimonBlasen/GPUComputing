@@ -776,75 +776,90 @@ __kernel void InitHeightfield(unsigned int width,
 
 	//resultRain = resultRain / 2;
 	
+
+
+	atomic_add(d_rain + particleID, -(rainHere));
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+
 	if (moveDir == 0)
 	{
-		if (GID.x + 1 < width && GID.y < height)
-		{
+		//if (GID.x + 1 < width && GID.y < height)
+		//{
+		//	atomic_add(d_rain + (GID.x + 1) + width * (GID.y + 0), resultRain);
+		//}
 			tileRain[LID.y + 1][LID.x + 2] += resultRain;
-		}
-			//atomic_add(d_rain + (GID.x + 1) + width * (GID.y + 0), resultRain);
 	}
-	else if (moveDir == 1)
+	barrier(CLK_LOCAL_MEM_FENCE);
+	if (moveDir == 1)
 	{
-		if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
-		{
+		//if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
+		//{
+		//	atomic_add(d_rain + (GID.x + 1) + width * (GID.y + 1), resultRain);
+		//}
 			tileRain[LID.y + 2][LID.x + 2] += resultRain;
-		}
-			//atomic_add(d_rain + (GID.x + 1) + width * (GID.y + 1), resultRain);
 	}
-	else if (moveDir == 2)
+	barrier(CLK_LOCAL_MEM_FENCE);
+	if (moveDir == 2)
 	{
-		if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
-		{
+		//if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
+		//{
+		//	atomic_add(d_rain + (GID.x + 0) + width * (GID.y + 1), resultRain);
+		//}
 			tileRain[LID.y + 2][LID.x + 1] += resultRain;
-		}
-			//atomic_add(d_rain + (GID.x + 0) + width * (GID.y + 1), resultRain);
 	}
-	else if (moveDir == 3)
+	barrier(CLK_LOCAL_MEM_FENCE);
+	if (moveDir == 3)
 	{
-		if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
-		{
-			tileRain[LID.y + 2][LID.x + 0] += resultRain;
-		}
-			//atomic_add(d_rain + (GID.x - 1) + width * (GID.y + 1), resultRain);
+		//if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 1 >= 0 && GID.y + 1 < height)
+		//{
+		//	atomic_add(d_rain + (GID.x - 1) + width * (GID.y + 1), resultRain);
+		//}
+		 	tileRain[LID.y + 2][LID.x + 0] += resultRain;
 	}
-	else if (moveDir == 4)
+	barrier(CLK_LOCAL_MEM_FENCE);
+	if (moveDir == 4)
 	{
-		if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 0 >= 0 && GID.y + 0 < height)
-		{
+		//if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y + 0 >= 0 && GID.y + 0 < height)
+		//{
+		//	atomic_add(d_rain + (GID.x - 1) + width * (GID.y + 0), resultRain);
+		//}
 			tileRain[LID.y + 1][LID.x + 0] += resultRain;
-		}
-			//atomic_add(d_rain + (GID.x - 1) + width * (GID.y + 0), resultRain);
 	}
-	else if (moveDir == 5)
+	barrier(CLK_LOCAL_MEM_FENCE);
+	if (moveDir == 5)
 	{
-		if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
-		{
+		//if (GID.x - 1 >= 0 && GID.x - 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
+		//{
+		//	atomic_add(d_rain + (GID.x - 1) + width * (GID.y - 1), resultRain);
+		//}
 			tileRain[LID.y + 0][LID.x + 0] += resultRain;
-		}
-			//atomic_add(d_rain + (GID.x - 1) + width * (GID.y - 1), resultRain);
 	}
-	else if (moveDir == 6)
+	barrier(CLK_LOCAL_MEM_FENCE);
+	if (moveDir == 6)
 	{
-		if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
-		{
+		//if (GID.x + 0 >= 0 && GID.x + 0 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
+		//{
+		//	atomic_add(d_rain + (GID.x + 0) + width * (GID.y - 1), resultRain);
+		//}
 			tileRain[LID.y + 0][LID.x + 1] += resultRain;
-		}
-			//atomic_add(d_rain + (GID.x + 0) + width * (GID.y - 1), resultRain);
 	}
-	else if (moveDir == 7)
+	barrier(CLK_LOCAL_MEM_FENCE);
+	if (moveDir == 7)
 	{
-		if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
-		{
+		//if (GID.x + 1 >= 0 && GID.x + 1 < width && GID.y - 1 >= 0 && GID.y - 1 < height)
+		//{
+		//	atomic_add(d_rain + (GID.x + 1) + width * (GID.y - 1), resultRain);
+		//}
 			tileRain[LID.y + 0][LID.x + 2] += resultRain;
-		}
-			//atomic_add(d_rain + (GID.x + 1) + width * (GID.y - 1), resultRain);
 	}
 		
 	
 	// Writeback rain
 
-
+	
+	barrier(CLK_LOCAL_MEM_FENCE);
 
 
 	// Top side halo
@@ -856,8 +871,7 @@ __kernel void InitHeightfield(unsigned int width,
 		}
 		else
 		{
-			unsigned int val = tileRain[0][LID.x + 1];
-			atomic_add(d_rain + (GID.y - 1) * width + GID.x, val);
+			atomic_add(d_rain + (GID.y - 1) * width + GID.x, tileRain[0][LID.x + 1]);
 		}
 	}
 
@@ -870,8 +884,7 @@ __kernel void InitHeightfield(unsigned int width,
 		}
 		else
 		{
-			unsigned int val = tileRain[TILE_Y + 1][LID.x + 1];
-			atomic_add(d_rain + (GID.y + 1) * width + GID.x, val);
+			atomic_add(d_rain + (GID.y + 1) * width + GID.x, tileRain[TILE_Y + 1][LID.x + 1]);
 		}
 	}
 
@@ -884,7 +897,6 @@ __kernel void InitHeightfield(unsigned int width,
 		}
 		else
 		{
-			unsigned int val = tileRain[TILE_Y + 1][LID.x + 1];
 			atomic_add(d_rain + (GID.y + 0) * width + GID.x - 1, tileRain[LID.y + 1][0]);
 		}
 	}
@@ -960,19 +972,19 @@ __kernel void InitHeightfield(unsigned int width,
 	}
 
 
-	if (true ||LID.x == 0 || LID.y == 0 || LID.x == LSIZE.x - 1 || LID.y == LSIZE.y - 1)
+	if (LID.x == 0 || LID.y == 0 || LID.x == LSIZE.x - 1 || LID.y == LSIZE.y - 1)
 	{
-		atomic_add(d_rain + particleID, -(rainHere));
-		atomic_add(d_rain + (GID.y + 0) * width + GID.x + 0, tileRain[LID.y][LID.x]);
+		//atomic_add(d_rain + particleID, -(rainHere));
+		atomic_add(d_rain + (GID.y + 0) * width + GID.x + 0, tileRain[LID.y + 1][LID.x + 1]);
 	}
 	else
 	{
-		d_rain[particleID] = tileRain[LID.y][LID.x];
+		d_rain[particleID] = tileRain[LID.y + 1][LID.x + 1];
 	}
 
 
 
-
+	
 
 
 
